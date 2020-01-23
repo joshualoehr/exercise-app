@@ -1,0 +1,16 @@
+.hello {
+    font-family: 'Trebuchet MS', Helvetica, sans-serif;
+}
+
+.hello table {
+    border: 1px solid black;
+}
+
+.hello thead > tr {
+    font-weight: bold;
+    background-color: rgb(200, 200, 200);
+}
+
+.hello td {
+    padding: 8px 12px;
+}

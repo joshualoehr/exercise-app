@@ -1,0 +1,25 @@
+// This is an example of the db.json file that is output from scripts/generateMockData.js.
+// The actual db.json is not committed as it is intended to be generated when built.
+
+{
+  "users": [
+    {
+      "id": 31569230,
+      "firstName": "Rebeka",
+      "lastName": "Boyle",
+      "email": "Lucious.Oberbrunner@hotmail.com"
+    },
+    {
+      "id": 52962584,
+      "firstName": "Ida",
+      "lastName": "Turner",
+      "email": "Amir.Medhurst@gmail.com"
+    },
+    {
+      "id": 47073293,
+      "firstName": "Nicolas",
+      "lastName": "Ritchie",
+      "email": "Koby_Breitenberg@yahoo.com"
+    }
+  ]
+}
