@@ -15,29 +15,131 @@ const schema = {
             items: {
                 type: 'object',
                 properties: {
-                    id: {
+                    userId: {
                         type: 'integer',
                         unique: true,
                         minimum: 1
                     },
-                    firstName: {
+                    displayName: {
                         type: 'string',
-                        faker: 'name.firstName'
-                    },
-                    lastName: {
-                        type: 'string',
-                        faker: 'name.lastName'
-                    },
-                    email: {
-                        type: 'string',
-                        faker: 'internet.email'
+                        faker: 'name.findName'
                     }
                 },
-                required: ['id', 'firstName', 'lastName', 'email']
+                required: ['userId', 'displayName']
+            }
+        },
+        workouts: {
+            type: 'array',
+            minItems: 3,
+            maxItems: 5,
+            items: {
+                type: 'object',
+                properties: {
+                    workoutId: {
+                        type: 'integer',
+                        unique: true,
+                        minimum: 1
+                    },
+                    workoutExercises: {
+                        type: 'array',
+                        minItems: 3,
+                        maxItems: 5,
+                        items: {
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    enum: [
+                                        'Squat',
+                                        'Bench Press',
+                                        'Barbell Row',
+                                        'OH Press',
+                                        'Deadlift'
+                                    ]
+                                },
+                                numSets: {
+                                    type: 'integer',
+                                    minimum: 3,
+                                    maximum: 10
+                                },
+                                numReps: {
+                                    type: 'integer',
+                                    minimum: 5,
+                                    maximum: 10
+                                },
+                                weight: {
+                                    type: 'integer',
+                                    minimum: 40,
+                                    maximum: 300
+                                }
+                            },
+                            required: ['name', 'numSets', 'numReps', 'weight']
+                        }
+                    }
+                },
+                required: ['workoutId', 'workoutExercises']
+            }
+        },
+        exercises: {
+            type: 'array',
+            minItems: 3,
+            maxItems: 5,
+            items: {
+                type: 'object',
+                properties: {
+                    exerciseName: {
+                        type: 'string',
+                        enum: [
+                            'Squat',
+                            'Bench Press',
+                            'Barbell Row',
+                            'OH Press',
+                            'Deadlift'
+                        ]
+                    },
+                    numSets: {
+                        type: 'integer',
+                        minimum: 3,
+                        maximum: 10
+                    },
+                    numReps: {
+                        type: 'integer',
+                        minimum: 5,
+                        maximum: 10
+                    },
+                    weight: {
+                        type: 'integer',
+                        minimum: 40,
+                        maximum: 300
+                    },
+                    sets: {
+                        type: 'array',
+                        minItems: 3,
+                        maxItems: 10,
+                        items: {
+                            type: 'object',
+                            properties: {
+                                completedReps: {
+                                    type: 'integer',
+                                    minimum: 0,
+                                    maximum: 10
+                                }
+                            },
+                            required: ['completedReps']
+                        }
+                    }
+                },
+                required: [
+                    'exerciseName',
+                    'numSets',
+                    'numReps',
+                    'weight',
+                    'sets'
+                ]
             }
         }
     },
-    required: ['users']
+    required: ['users', 'workouts']
 };
 
 jsf.extend('faker', () => require('faker'));
