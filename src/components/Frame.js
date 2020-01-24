@@ -8,11 +8,12 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 
+import { TOP_BAR_HEIGHT } from '../config/constants';
+
 const AppContent = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 6px;
     height: 100%;
 `;
 
@@ -21,7 +22,7 @@ const useStyles = makeStyles(() => ({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        height: '48px'
+        height: TOP_BAR_HEIGHT
     },
     toolbar: {
         display: 'flex',
@@ -52,7 +53,7 @@ const Frame = ({ children, showSignOut, signOut }) => {
                     )}
                 </Toolbar>
             </AppBar>
-            <div style={{ height: '60px' }}></div>
+            <div style={{ height: TOP_BAR_HEIGHT }}></div>
             <AppContent>{children}</AppContent>
         </>
     );

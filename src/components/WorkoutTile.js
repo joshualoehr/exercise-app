@@ -12,7 +12,7 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
         marginTop: theme.spacing(2),
         '&:hover': {
-            backgroundColor: 'rgb(220, 220, 220)'
+            backgroundColor: 'rgba(0,0,0,0.1)'
         }
     },
     cardContent: {
@@ -37,11 +37,11 @@ const truncateExercises = (exercises, max = 3) => {
     return [...exercises.slice(0, max), `...and ${extra} more`];
 };
 
-const WorkoutTile = ({ workout }) => {
+const WorkoutTile = ({ selectWorkout, workout }) => {
     const classes = useStyles();
 
     return (
-        <Card className={classes.card}>
+        <Card className={classes.card} onClick={selectWorkout}>
             <CardContent className={classes.cardContent}>
                 <div>
                     <Typography variant="h5">{workout.workoutName}</Typography>
@@ -78,6 +78,7 @@ const WorkoutTile = ({ workout }) => {
 };
 
 WorkoutTile.propTypes = {
+    selectWorkout: PropTypes.func,
     workout: PropTypes.object
 };
 

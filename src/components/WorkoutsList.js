@@ -15,7 +15,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const WorkoutsList = () => {
+const WorkoutsList = ({ selectWorkout }) => {
     const classes = useStyles();
     const [workouts, setWorkouts] = useState();
 
@@ -42,7 +42,11 @@ const WorkoutsList = () => {
         >
             {workouts ? (
                 workouts.map(workout => (
-                    <WorkoutTile key={workout.workoutId} workout={workout} />
+                    <WorkoutTile
+                        key={workout.workoutId}
+                        workout={workout}
+                        selectWorkout={() => selectWorkout(workout)}
+                    />
                 ))
             ) : (
                 <CircularProgress />
@@ -52,6 +56,7 @@ const WorkoutsList = () => {
 };
 
 WorkoutsList.propTypes = {
+    selectWorkout: PropTypes.func,
     user: PropTypes.object
 };
 
