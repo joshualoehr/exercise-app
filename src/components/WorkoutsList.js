@@ -31,7 +31,8 @@ const WorkoutsList = ({ selectWorkout }) => {
                 }))
             )
             .then(workouts => {
-                setTimeout(() => setWorkouts(workouts), 500);
+                setWorkouts(workouts);
+                selectWorkout(workouts[0]);
             });
     }, []);
 

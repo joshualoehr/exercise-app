@@ -92,69 +92,94 @@ const schema = {
                         }
                     }
                 },
-                required: ['workoutId', 'workoutName', 'workoutExercises']
+                required: [
+                    'workoutId',
+                    'workoutName',
+                    'nextWeight',
+                    'workoutExercises'
+                ]
             }
         },
-        exercises: {
+        workoutHistory: {
             type: 'array',
-            minItems: 3,
-            maxItems: 5,
+            minItems: 1,
+            maxItems: 10,
             items: {
                 type: 'object',
                 properties: {
-                    exerciseName: {
+                    workoutId: {
+                        type: 'integer',
+                        unique: true,
+                        minimum: 1
+                    },
+                    date: {
                         type: 'string',
-                        enum: [
-                            'Squat',
-                            'Bench Press',
-                            'Barbell Row',
-                            'OH Press',
-                            'Deadlift'
-                        ]
+                        faker: 'date.recent'
                     },
-                    numSets: {
-                        type: 'integer',
-                        minimum: 3,
-                        maximum: 10
-                    },
-                    numReps: {
-                        type: 'integer',
-                        minimum: 5,
-                        maximum: 10
-                    },
-                    weight: {
-                        type: 'integer',
-                        minimum: 40,
-                        maximum: 300
-                    },
-                    sets: {
+                    exercises: {
                         type: 'array',
                         minItems: 3,
-                        maxItems: 10,
+                        maxItems: 5,
                         items: {
                             type: 'object',
                             properties: {
-                                completedReps: {
+                                exerciseName: {
+                                    type: 'string',
+                                    enum: [
+                                        'Squat',
+                                        'Bench Press',
+                                        'Barbell Row',
+                                        'OH Press',
+                                        'Deadlift'
+                                    ]
+                                },
+                                numSets: {
                                     type: 'integer',
-                                    minimum: 0,
+                                    minimum: 3,
                                     maximum: 10
+                                },
+                                numReps: {
+                                    type: 'integer',
+                                    minimum: 5,
+                                    maximum: 10
+                                },
+                                weight: {
+                                    type: 'integer',
+                                    minimum: 40,
+                                    maximum: 300
+                                },
+                                sets: {
+                                    type: 'array',
+                                    minItems: 3,
+                                    maxItems: 10,
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            completedReps: {
+                                                type: 'integer',
+                                                minimum: 0,
+                                                maximum: 10
+                                            }
+                                        },
+                                        required: ['completedReps']
+                                    }
                                 }
                             },
-                            required: ['completedReps']
+                            required: [
+                                'exerciseName',
+                                'numSets',
+                                'numReps',
+                                'weight',
+                                'sets'
+                            ]
                         }
                     }
                 },
-                required: [
-                    'exerciseName',
-                    'numSets',
-                    'numReps',
-                    'weight',
-                    'sets'
-                ]
+                required: ['workoutId', 'date', 'exercises']
             }
         }
     },
-    required: ['users', 'workouts']
+    required: ['users', 'workouts', 'workoutHistory']
 };
 
 jsf.extend('faker', () => require('faker'));

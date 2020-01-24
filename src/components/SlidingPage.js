@@ -24,7 +24,14 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const SlidingPage = ({ children, show, hide, title, direction = 'left' }) => {
+const SlidingPage = ({
+    children,
+    show,
+    hide,
+    title,
+    RightSide,
+    direction = 'left'
+}) => {
     const classes = useStyles();
 
     return (
@@ -35,7 +42,8 @@ const SlidingPage = ({ children, show, hide, title, direction = 'left' }) => {
                     position: 'absolute',
                     top: 0,
                     height: '100%',
-                    width: '100%'
+                    width: '100%',
+                    overflowY: 'scroll'
                 }}
             >
                 <div style={{ height: TOP_BAR_HEIGHT }}></div>
@@ -47,7 +55,11 @@ const SlidingPage = ({ children, show, hide, title, direction = 'left' }) => {
                         <Typography variant="h5" className={classes.title}>
                             {title}
                         </Typography>
-                        <div style={{ width: '48px' }}></div>
+                        {RightSide ? (
+                            <RightSide />
+                        ) : (
+                            <div style={{ width: '48px' }}></div>
+                        )}
                     </Toolbar>
                 </AppBar>
                 {children}
@@ -61,6 +73,7 @@ SlidingPage.propTypes = {
     show: PropTypes.bool,
     hide: PropTypes.func,
     title: PropTypes.string,
+    RightSide: PropTypes.func,
     direction: PropTypes.string
 };
 

@@ -8,7 +8,7 @@
         "lint": "esw src --color",
         "lint:watch": "npm run lint -- --watch",
         "postinstall": "npm audit",
-        "start": "npm-run-all --parallel start-app start-mockapi lint:watch",
+        "start": "npm-run-all --parallel start-app start-mockapi",
         "start-app": "webpack-dev-server --open --port 3000",
         "start-browsersync": "browser-sync start --server --port=3000 --index=index.html --files='src/*'",
         "prestart-mockapi": "npm run generate-mock-data",

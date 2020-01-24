@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
+import EditIcon from '@material-ui/icons/Edit';
+import IconButton from '@material-ui/core/IconButton';
 
 import Theme from './Theme';
-import { Frame, SignIn, SlidingPage, WorkoutsList } from './components';
+import {
+    Frame,
+    SignIn,
+    SlidingPage,
+    WorkoutsList,
+    WorkoutPage
+} from './components';
 import './App.css';
 
 const App = () => {
@@ -31,8 +39,15 @@ const App = () => {
                                     ? selectedWorkout.workoutName
                                     : ''
                             }
+                            RightSide={() => (
+                                <IconButton>
+                                    <EditIcon style={{ color: 'white' }} />
+                                </IconButton>
+                            )}
                         >
-                            <div></div>
+                            {selectedWorkout && (
+                                <WorkoutPage workout={selectedWorkout} />
+                            )}
                         </SlidingPage>
                     </>
                 ) : (
