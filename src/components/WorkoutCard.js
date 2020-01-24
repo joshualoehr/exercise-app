@@ -37,14 +37,16 @@ const truncateExercises = (exercises, max = 3) => {
     return [...exercises.slice(0, max), `...and ${extra} more`];
 };
 
-const WorkoutTile = ({ selectWorkout, workout }) => {
+const WorkoutCard = ({ selectWorkout, workout }) => {
     const classes = useStyles();
 
     return (
         <Card className={classes.card} onClick={selectWorkout}>
             <CardContent className={classes.cardContent}>
                 <div>
-                    <Typography variant="h5">{workout.workoutName}</Typography>
+                    <Typography variant="h5" style={{ marginBottom: '6px' }}>
+                        {workout.workoutName}
+                    </Typography>
                     {truncateExercises(workout.workoutExercises).map(exercise =>
                         typeof exercise === 'string' ? (
                             <Typography
@@ -77,9 +79,9 @@ const WorkoutTile = ({ selectWorkout, workout }) => {
     );
 };
 
-WorkoutTile.propTypes = {
+WorkoutCard.propTypes = {
     selectWorkout: PropTypes.func,
     workout: PropTypes.object
 };
 
-export default WorkoutTile;
+export default WorkoutCard;

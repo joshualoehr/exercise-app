@@ -3,15 +3,23 @@ import PropTypes from 'prop-types';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from '@material-ui/core/Typography';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
 
-import WorkoutTile from './WorkoutTile';
+import WorkoutCard from './WorkoutCard';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
     container: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         height: '100%'
+    },
+    fab: {
+        position: 'absolute',
+        bottom: theme.spacing(2),
+        right: theme.spacing(2)
     }
 }));
 
@@ -32,18 +40,27 @@ const WorkoutsList = ({ selectWorkout }) => {
             )
             .then(workouts => {
                 setWorkouts(workouts);
-                selectWorkout(workouts[0]);
+                // selectWorkout(workouts[0]);
             });
     }, []);
 
     return (
         <Container
             className={classes.container}
-            style={{ justifyContent: workouts ? 'normal' : 'center' }}
+            style={{
+                justifyContent: workouts ? 'normal' : 'center',
+                alignItems: 'start'
+            }}
         >
+            <Typography
+                variant="h4"
+                style={{ marginTop: '20px', marginLeft: '10px' }}
+            >
+                Workouts
+            </Typography>
             {workouts ? (
                 workouts.map(workout => (
-                    <WorkoutTile
+                    <WorkoutCard
                         key={workout.workoutId}
                         workout={workout}
                         selectWorkout={() => selectWorkout(workout)}
@@ -52,6 +69,13 @@ const WorkoutsList = ({ selectWorkout }) => {
             ) : (
                 <CircularProgress />
             )}
+            <Fab
+                aria-label="add workout"
+                className={classes.fab}
+                color="secondary"
+            >
+                <AddIcon />
+            </Fab>
         </Container>
     );
 };

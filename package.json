@@ -10,7 +10,7 @@
         "postinstall": "npm audit",
         "start": "npm-run-all --parallel start-app start-mockapi",
         "start-app": "webpack-dev-server --open --port 3000",
-        "start-browsersync": "browser-sync start --server --port=3000 --index=index.html --files='src/*'",
+        "start-browsersync": "browser-sync start --server --port=3000 --index=index.html --files='dist/*'",
         "prestart-mockapi": "npm run generate-mock-data",
         "start-mockapi": "json-server --watch src/api/db.json --port 3001"
     },
