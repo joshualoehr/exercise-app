@@ -40,6 +40,10 @@ const schema = {
                         unique: true,
                         minimum: 1
                     },
+                    workoutName: {
+                        type: 'string',
+                        faker: 'lorem.word'
+                    },
                     workoutExercises: {
                         type: 'array',
                         minItems: 3,
@@ -47,7 +51,12 @@ const schema = {
                         items: {
                             type: 'object',
                             properties: {
-                                name: {
+                                exerciseId: {
+                                    type: 'integer',
+                                    unique: true,
+                                    minimum: 1
+                                },
+                                exerciseName: {
                                     type: 'string',
                                     enum: [
                                         'Squat',
@@ -73,11 +82,17 @@ const schema = {
                                     maximum: 300
                                 }
                             },
-                            required: ['name', 'numSets', 'numReps', 'weight']
+                            required: [
+                                'exerciseId',
+                                'exerciseName',
+                                'numSets',
+                                'numReps',
+                                'weight'
+                            ]
                         }
                     }
                 },
-                required: ['workoutId', 'workoutExercises']
+                required: ['workoutId', 'workoutName', 'workoutExercises']
             }
         },
         exercises: {
