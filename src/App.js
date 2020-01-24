@@ -5,11 +5,11 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import './App.css';
 
 const App = () => {
-    const [user, setUser] = useState();
+    const [user, setUser] = useState({});
 
     return (
         <ThemeProvider theme={Theme}>
-            <Frame>
+            <Frame showSignOut={!!user} signOut={() => setUser(null)}>
                 {user ? (
                     <WorkoutsList user={user} />
                 ) : (
