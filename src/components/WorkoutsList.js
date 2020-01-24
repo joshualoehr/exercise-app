@@ -22,8 +22,16 @@ const WorkoutsList = () => {
     useEffect(() => {
         fetch('http://localhost:3001/workouts')
             .then(res => res.json())
-            .then(json => {
-                setTimeout(() => setWorkouts(json), 500);
+            .then(json =>
+                json.map(({ workoutName, ...workout }) => ({
+                    workoutName:
+                        workoutName.charAt(0).toUpperCase() +
+                        workoutName.substring(1),
+                    ...workout
+                }))
+            )
+            .then(workouts => {
+                setTimeout(() => setWorkouts(workouts), 500);
             });
     }, []);
 
