@@ -9,7 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import Typography from '@material-ui/core/Typography';
 
-import { TOP_BAR_HEIGHT } from '../config/constants';
+import { TOP_BAR_HEIGHT_PX } from '../config/constants';
 
 const AppContent = styled.div`
     display: flex;
@@ -23,13 +23,14 @@ const useStyles = makeStyles(() => ({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        height: TOP_BAR_HEIGHT
+        height: TOP_BAR_HEIGHT_PX
     },
     toolbar: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        minHeight: TOP_BAR_HEIGHT_PX
     }
 }));
 
@@ -69,7 +70,7 @@ const Frame = ({ children, showSignOut, signOut }) => {
                     )}
                 </Toolbar>
             </AppBar>
-            <div style={{ height: TOP_BAR_HEIGHT }}></div>
+            <div style={{ height: TOP_BAR_HEIGHT_PX }}></div>
             <AppContent>{children}</AppContent>
         </>
     );

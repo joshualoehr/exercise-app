@@ -40,7 +40,7 @@ const WorkoutsList = ({ selectWorkout }) => {
             )
             .then(workouts => {
                 setWorkouts(workouts);
-                // selectWorkout(workouts[0]);
+                selectWorkout(workouts[0]);
             });
     }, []);
 

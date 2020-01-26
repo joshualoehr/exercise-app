@@ -9,11 +9,16 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 
-import { TOP_BAR_HEIGHT } from '../config/constants';
+import { TOP_BAR_HEIGHT_PX } from '../config/constants';
 
 const useStyles = makeStyles(theme => ({
     appBar: {
-        backgroundColor: theme.palette.primary.light
+        backgroundColor: theme.palette.primary.light,
+        height: TOP_BAR_HEIGHT_PX
+    },
+    toolbar: {
+        justifyContent: 'space-between',
+        minHeight: TOP_BAR_HEIGHT_PX
     },
     backIcon: {
         color: 'white'
@@ -28,9 +33,10 @@ const SlidingPage = ({
     children,
     show,
     hide,
-    title,
+    Title,
     RightSide,
-    direction = 'left'
+    direction = 'left',
+    BackIcon = ArrowBackIcon
 }) => {
     const classes = useStyles();
 
@@ -39,22 +45,24 @@ const SlidingPage = ({
             <Paper
                 elevation={4}
                 style={{
+                    backgroundColor: 'rgb(245,245,245)',
                     position: 'absolute',
                     top: 0,
                     height: '100%',
-                    width: '100%',
-                    overflowY: 'scroll'
+                    width: '100%'
                 }}
             >
-                <div style={{ height: TOP_BAR_HEIGHT }}></div>
+                <div style={{ height: TOP_BAR_HEIGHT_PX }}></div>
                 <AppBar position="static" className={classes.appBar}>
-                    <Toolbar>
+                    <Toolbar className={classes.toolbar}>
                         <IconButton onClick={hide}>
-                            <ArrowBackIcon className={classes.backIcon} />
+                            {BackIcon ? (
+                                <BackIcon className={classes.backIcon} />
+                            ) : (
+                                <ArrowBackIcon className={classes.backIcon} />
+                            )}
                         </IconButton>
-                        <Typography variant="h5" className={classes.title}>
-                            {title}
-                        </Typography>
+                        {Title && <Title />}
                         {RightSide ? (
                             <RightSide />
                         ) : (
@@ -72,9 +80,10 @@ SlidingPage.propTypes = {
     children: PropTypes.object,
     show: PropTypes.bool,
     hide: PropTypes.func,
-    title: PropTypes.string,
+    Title: PropTypes.func,
     RightSide: PropTypes.func,
-    direction: PropTypes.string
+    direction: PropTypes.string,
+    BackIcon: PropTypes.object
 };
 
 export default SlidingPage;

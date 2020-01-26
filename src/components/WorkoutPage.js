@@ -4,10 +4,11 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CircularProgress from '@material-ui/core/CircularProgress';
+
+import { TOP_BAR_HEIGHT } from '../config/constants';
 
 const useStyles = makeStyles(theme => ({
     button: {
@@ -19,11 +20,9 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '24px'
-    },
-    divider: {
-        margin: '24px 0',
-        width: '100%'
+        padding: '24px',
+        height: `calc(100% - ${TOP_BAR_HEIGHT * 2}px)`,
+        overflowY: 'auto'
     },
     card: {
         cursor: 'pointer',
@@ -44,7 +43,8 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         backgroundColor: 'rgba(51, 147, 136, 0.2)',
         padding: '8px',
-        borderRadius: '6px'
+        borderRadius: '6px',
+        marginTop: '24px'
     }
 }));
 
@@ -88,11 +88,8 @@ const WorkoutPage = ({ workout }) => {
                     </div>
                 ))}
             </div>
-            <Divider variant="middle" className={classes.divider} />
             <div className={classes.historyContainer}>
-                <Typography variant="h6" style={{ marginBottom: '20px' }}>
-                    History
-                </Typography>
+                <Typography variant="h6">History</Typography>
                 {workoutHistory ? (
                     workoutHistory.length ? (
                         workoutHistory.map(workout => (
