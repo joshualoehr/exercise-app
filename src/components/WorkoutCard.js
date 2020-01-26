@@ -13,7 +13,8 @@ const useStyles = makeStyles(theme => ({
         marginTop: theme.spacing(2),
         '&:hover': {
             backgroundColor: 'rgba(0,0,0,0.1)'
-        }
+        },
+        overflow: 'unset'
     },
     cardContent: {
         display: 'flex',

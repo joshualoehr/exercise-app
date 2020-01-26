@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
+import { useDrag, useDrop } from 'react-dnd';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
@@ -11,10 +12,11 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
+import Divider from '@material-ui/core/Divider';
 
 import ExerciseEdit from './ExerciseEdit';
 import SlidingPage from './SlidingPage';
-import { TOP_BAR_HEIGHT } from '../config/constants';
+import { TOP_BAR_HEIGHT, DND_ITEM_TYPES } from '../config/constants';
 
 const useStyles = makeStyles(theme => ({
     editWorkoutNameRoot: {
@@ -34,16 +36,11 @@ const useStyles = makeStyles(theme => ({
         height: `calc(100% - ${TOP_BAR_HEIGHT * 2}px)`,
         justifyContent: 'space-between'
     },
-    divider: {
-        margin: '24px 0',
-        width: '100%'
-    },
     card: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         cursor: 'pointer',
-        marginTop: theme.spacing(2),
         '&:hover': {
             backgroundColor: 'rgba(0,0,0,0.1)'
         },
@@ -75,6 +72,89 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
+const WorkoutExerciseCard = ({
+    exercise,
+    setDraggedExercise,
+    setSelectedExercise
+}) => {
+    const classes = useStyles();
+    const [{ isDragging }, drag] = useDrag({
+        item: { type: DND_ITEM_TYPES.CARD },
+        collect: monitor => ({
+            isDragging: !!monitor.isDragging()
+        })
+    });
+
+    if (isDragging) {
+        setDraggedExercise(exercise);
+    }
+
+    return (
+        <Card
+            ref={drag}
+            className={classes.card}
+            onClick={() => setSelectedExercise(exercise)}
+            style={{
+                opacity: isDragging ? 0.7 : 1.0,
+                backgroundColor: isDragging ? '#E5EAFB' : null,
+                cursor: isDragging ? 'grabbing' : 'grab'
+            }}
+        >
+            <Typography>{exercise.exerciseName}</Typography>
+            <div style={{ display: 'flex' }}>
+                <Typography>
+                    {exercise.numSets}x{exercise.numReps} {exercise.weight}lbs
+                </Typography>
+                <DragIndicatorIcon className={classes.dragIcon} />
+            </div>
+        </Card>
+    );
+};
+
+WorkoutExerciseCard.propTypes = {
+    exercise: PropTypes.object,
+    setDraggedExercise: PropTypes.func,
+    setSelectedExercise: PropTypes.func
+};
+
+const WorkoutExerciseDivider = ({ index, reorderExercise }) => {
+    const [{ isOver }, drop] = useDrop({
+        accept: DND_ITEM_TYPES.CARD,
+        drop: () => reorderExercise(index),
+        collect: monitor => ({
+            isOver: !!monitor.isOver()
+        })
+    });
+
+    return (
+        <div
+            ref={drop}
+            style={{
+                alignSelf: 'center',
+                height: isOver ? '56px' : '24px',
+                transition: 'height 0.2s ease-in-out',
+                width: '100%',
+                padding: isOver ? '12px 0' : 0
+            }}
+        >
+            <div
+                style={{
+                    border: '2px dashed royalblue',
+                    height: '90%',
+                    borderRadius: '3px',
+                    opacity: isOver ? 0.7 : 0,
+                    transition: 'opacity 0.2s'
+                }}
+            ></div>
+        </div>
+    );
+};
+
+WorkoutExerciseDivider.propTypes = {
+    index: PropTypes.number,
+    reorderExercise: PropTypes.func
+};
+
 const WorkoutEditContent = ({ workout, setWorkout }) => {
     const classes = useStyles();
 
@@ -102,27 +182,63 @@ const WorkoutEditContent = ({ workout, setWorkout }) => {
         setWorkout({ ...workout, workoutExercises });
     };
 
+    const [draggedExercise, setDraggedExercise] = useState();
+
+    const reorderExercises = (exercise, newIndex) => {
+        const currentIndex = workoutExercises.findIndex(
+            e => e.exerciseId === exercise.exerciseId
+        );
+
+        if (currentIndex === newIndex) return;
+
+        let reorderedExercises = workoutExercises.reduce((acc, ex, i) => {
+            if (i === currentIndex) {
+                return acc;
+            } else if (i === newIndex) {
+                return [...acc, exercise, ex];
+            } else {
+                return [...acc, ex];
+            }
+        }, []);
+        if (newIndex === workoutExercises.length) {
+            reorderedExercises.push(exercise);
+        }
+        setWorkoutExercises(reorderedExercises);
+    };
+
     return (
         <Container className={classes.container}>
-            <div style={{ width: '100%' }}>
+            <div
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch'
+                }}
+            >
                 <Typography className={classes.helpText}>
                     Tap to edit, drag to reorder
                 </Typography>
-                {workoutExercises.map(exercise => (
-                    <Card
-                        key={exercise.exerciseId}
-                        className={classes.card}
-                        onClick={() => setSelectedExercise(exercise)}
-                    >
-                        <Typography>{exercise.exerciseName}</Typography>
-                        <div style={{ display: 'flex' }}>
-                            <Typography>
-                                {exercise.numSets}x{exercise.numReps}{' '}
-                                {exercise.weight}lbs
-                            </Typography>
-                            <DragIndicatorIcon className={classes.dragIcon} />
-                        </div>
-                    </Card>
+                <WorkoutExerciseDivider
+                    index={0}
+                    reorderExercise={() => reorderExercises(draggedExercise, 0)}
+                />
+                {workoutExercises.map((exercise, i) => (
+                    <Fragment key={i}>
+                        <WorkoutExerciseCard
+                            key={exercise.exerciseId}
+                            exercise={exercise}
+                            setDraggedExercise={setDraggedExercise}
+                            setSelectedExercise={setSelectedExercise}
+                        />
+                        <WorkoutExerciseDivider
+                            key={i}
+                            index={i + 1}
+                            reorderExercise={index =>
+                                reorderExercises(draggedExercise, index)
+                            }
+                        />
+                    </Fragment>
                 ))}
                 <Button
                     className={classes.add}

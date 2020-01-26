@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
+import { DndProvider } from 'react-dnd';
+import Backend from 'react-dnd-touch-backend';
 
 import Theme from './Theme';
 import {
@@ -27,32 +29,34 @@ const App = () => {
     };
 
     return (
-        <ThemeProvider theme={Theme}>
-            <Frame showSignOut={!!user} signOut={signOut}>
-                {user ? (
-                    <>
-                        <WorkoutsList
-                            user={user}
-                            selectWorkout={setSelectedWorkout}
-                        />
-                        <WorkoutPage
-                            show={!!selectedWorkout}
-                            hide={() => setSelectedWorkout(null)}
-                            workout={selectedWorkout}
-                            setEditingWorkout={setEditingWorkout}
-                        />
-                        <WorkoutEdit
-                            show={!!editingWorkout}
-                            hide={() => setEditingWorkout(null)}
-                            workout={editingWorkout}
-                            onSave={saveWorkout}
-                        />
-                    </>
-                ) : (
-                    <SignIn setUser={setUser} />
-                )}
-            </Frame>
-        </ThemeProvider>
+        <DndProvider backend={Backend} options={{ enableMouseEvents: true }}>
+            <ThemeProvider theme={Theme}>
+                <Frame showSignOut={!!user} signOut={signOut}>
+                    {user ? (
+                        <>
+                            <WorkoutsList
+                                user={user}
+                                selectWorkout={setSelectedWorkout}
+                            />
+                            <WorkoutPage
+                                show={!!selectedWorkout}
+                                hide={() => setSelectedWorkout(null)}
+                                workout={selectedWorkout}
+                                setEditingWorkout={setEditingWorkout}
+                            />
+                            <WorkoutEdit
+                                show={!!editingWorkout}
+                                hide={() => setEditingWorkout(null)}
+                                workout={editingWorkout}
+                                onSave={saveWorkout}
+                            />
+                        </>
+                    ) : (
+                        <SignIn setUser={setUser} />
+                    )}
+                </Frame>
+            </ThemeProvider>
+        </DndProvider>
     );
 };
 

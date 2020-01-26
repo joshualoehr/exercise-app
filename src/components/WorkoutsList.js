@@ -11,6 +11,7 @@ import WorkoutCard from './WorkoutCard';
 
 const useStyles = makeStyles(theme => ({
     container: {
+        overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
