@@ -1,19 +1,20 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDrag, useDrop } from 'react-dnd';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 import Button from '@material-ui/core/Button';
 import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
-import Divider from '@material-ui/core/Divider';
 
+import ConfirmationDialog from './ConfirmationDialog';
 import ExerciseEdit from './ExerciseEdit';
 import SlidingPage from './SlidingPage';
 import { TOP_BAR_HEIGHT, DND_ITEM_TYPES } from '../config/constants';
@@ -34,7 +35,8 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         padding: '24px',
         height: `calc(100% - ${TOP_BAR_HEIGHT * 2}px)`,
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        overflow: 'auto'
     },
     card: {
         display: 'flex',
@@ -55,7 +57,19 @@ const useStyles = makeStyles(theme => ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '10px'
+        padding: '10px',
+        borderRadius: '3px'
+    },
+    deleteExercise: {
+        marginTop: theme.spacing(3),
+        backgroundColor: 'inherit',
+        border: `2px dashed ${theme.palette.secondary.main}`,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '10px',
+        borderRadius: '3px'
     },
     dragIcon: {
         marginLeft: theme.spacing(2),
@@ -68,7 +82,7 @@ const useStyles = makeStyles(theme => ({
     delete: {
         width: '100%',
         marginTop: theme.spacing(3),
-        height: '56px'
+        minHeight: '56px'
     }
 }));
 
@@ -155,8 +169,47 @@ WorkoutExerciseDivider.propTypes = {
     reorderExercise: PropTypes.func
 };
 
-const WorkoutEditContent = ({ workout, setWorkout }) => {
+const WorkoutExerciseDeleteDrop = ({
+    reorderExercise,
+    setSelectedExercise
+}) => {
     const classes = useStyles();
+    const [{ isDragging, isOver }, drop] = useDrop({
+        accept: DND_ITEM_TYPES.CARD,
+        drop: () => reorderExercise(-1),
+        collect: monitor => ({
+            isDragging: !!monitor.getItem(),
+            isOver: !!monitor.isOver()
+        })
+    });
+
+    return isDragging ? (
+        <div
+            ref={drop}
+            className={classes.deleteExercise}
+            style={{ opacity: isOver ? 1.0 : 0.5 }}
+        >
+            <DeleteIcon
+                fontSize="large"
+                style={{ opacity: isOver ? 1.0 : 0.5 }}
+                color="secondary"
+            />
+        </div>
+    ) : (
+        <Button className={classes.add} onClick={() => setSelectedExercise({})}>
+            <AddIcon fontSize="large" style={{ opacity: 0.5 }} />
+        </Button>
+    );
+};
+
+WorkoutExerciseDeleteDrop.propTypes = {
+    reorderExercise: PropTypes.func,
+    setSelectedExercise: PropTypes.func
+};
+
+const WorkoutEditContent = ({ workout, setWorkout, deleteWorkout }) => {
+    const classes = useStyles();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const [workoutExercises, setWorkoutExercises] = useState(
         workout.workoutExercises
@@ -240,17 +293,18 @@ const WorkoutEditContent = ({ workout, setWorkout }) => {
                         />
                     </Fragment>
                 ))}
-                <Button
-                    className={classes.add}
-                    onClick={() => setSelectedExercise({})}
-                >
-                    <AddIcon fontSize="large" style={{ opacity: 0.5 }} />
-                </Button>
+                <WorkoutExerciseDeleteDrop
+                    reorderExercise={index =>
+                        reorderExercises(draggedExercise, index)
+                    }
+                    setSelectedExercise={setSelectedExercise}
+                />
             </div>
             <Button
                 color="secondary"
                 variant="outlined"
                 className={classes.delete}
+                onClick={() => setShowDeleteDialog(true)}
             >
                 Delete
             </Button>
@@ -261,11 +315,28 @@ const WorkoutEditContent = ({ workout, setWorkout }) => {
                     onSave={saveExercise}
                 />
             )}
+            <ConfirmationDialog
+                open={showDeleteDialog}
+                onCancel={() => setShowDeleteDialog(false)}
+                onConfirm={deleteWorkout}
+                confirmColor="secondary"
+                confirmText="Delete"
+            >
+                <Typography>
+                    Are you sure you want to delete {workout.workoutName}?
+                </Typography>
+            </ConfirmationDialog>
         </Container>
     );
 };
 
-const WorkoutEdit = ({ show, hide, workout, onSave }) => {
+WorkoutEditContent.propTypes = {
+    workout: PropTypes.object,
+    setWorkout: PropTypes.func,
+    deleteWorkout: PropTypes.func
+};
+
+const WorkoutEdit = ({ show, hide, workout, onSave, deleteWorkout }) => {
     const classes = useStyles();
     const [editedWorkout, setEditedWorkout] = useState(workout);
     if (workout && !editedWorkout) {
@@ -317,22 +388,19 @@ const WorkoutEdit = ({ show, hide, workout, onSave }) => {
                 <WorkoutEditContent
                     workout={workout}
                     setWorkout={setEditedWorkout}
+                    deleteWorkout={deleteWorkout}
                 />
             )}
         </SlidingPage>
     );
 };
 
-WorkoutEditContent.propTypes = {
-    workout: PropTypes.object,
-    setWorkout: PropTypes.func
-};
-
 WorkoutEdit.propTypes = {
     show: PropTypes.bool,
     hide: PropTypes.func,
     workout: PropTypes.object,
-    onSave: PropTypes.func
+    onSave: PropTypes.func,
+    deleteWorkout: PropTypes.func
 };
 
 export default WorkoutEdit;

@@ -28,6 +28,11 @@ const App = () => {
         setEditingWorkout(null);
     };
 
+    const deleteWorkout = () => {
+        setEditingWorkout(null);
+        setSelectedWorkout(null);
+    };
+
     return (
         <DndProvider backend={Backend} options={{ enableMouseEvents: true }}>
             <ThemeProvider theme={Theme}>
@@ -49,6 +54,7 @@ const App = () => {
                                 hide={() => setEditingWorkout(null)}
                                 workout={editingWorkout}
                                 onSave={saveWorkout}
+                                deleteWorkout={deleteWorkout}
                             />
                         </>
                     ) : (
