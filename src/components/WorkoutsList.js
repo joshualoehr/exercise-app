@@ -40,7 +40,7 @@ const WorkoutsList = ({ selectWorkout }) => {
             )
             .then(workouts => {
                 setWorkouts(workouts);
-                selectWorkout(workouts[0]);
+                // selectWorkout(workouts[0]);
             });
     }, []);
 
@@ -67,7 +67,17 @@ const WorkoutsList = ({ selectWorkout }) => {
                     />
                 ))
             ) : (
-                <CircularProgress />
+                <div
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <CircularProgress />
+                </div>
             )}
             <Fab
                 aria-label="add workout"

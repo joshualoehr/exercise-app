@@ -7,7 +7,10 @@ import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import IconButton from '@material-ui/core/IconButton';
+import EditIcon from '@material-ui/icons/Edit';
 
+import SlidingPage from './SlidingPage';
 import { TOP_BAR_HEIGHT } from '../config/constants';
 
 const useStyles = makeStyles(theme => ({
@@ -48,7 +51,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const WorkoutPage = ({ workout }) => {
+const WorkoutPageContent = ({ workout }) => {
     const classes = useStyles();
     const [workoutHistory, setWorkoutHistory] = useState();
 
@@ -115,8 +118,30 @@ const WorkoutPage = ({ workout }) => {
     );
 };
 
-WorkoutPage.propTypes = {
+const WorkoutPage = ({ workout, show, hide, setEditingWorkout }) => (
+    <SlidingPage
+        show={show}
+        hide={hide}
+        Title={() => <Typography>{workout && workout.workoutName}</Typography>}
+        RightSide={() => (
+            <IconButton onClick={() => setEditingWorkout(workout)}>
+                <EditIcon style={{ color: 'white' }} />
+            </IconButton>
+        )}
+    >
+        {workout && <WorkoutPageContent workout={workout} />}
+    </SlidingPage>
+);
+
+WorkoutPageContent.propTypes = {
     workout: PropTypes.object
+};
+
+WorkoutPage.propTypes = {
+    workout: PropTypes.object,
+    show: PropTypes.bool,
+    hide: PropTypes.func,
+    setEditingWorkout: PropTypes.func
 };
 
 export default WorkoutPage;

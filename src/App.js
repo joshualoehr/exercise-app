@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
-import EditIcon from '@material-ui/icons/Edit';
-import CheckIcon from '@material-ui/icons/Check';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
 
 import Theme from './Theme';
 import {
     Frame,
     SignIn,
-    SlidingPage,
     WorkoutEdit,
     WorkoutsList,
     WorkoutPage
@@ -18,16 +13,18 @@ import './App.css';
 
 const App = () => {
     const [user, setUser] = useState({});
-    const [selectedWorkout, selectWorkout] = useState();
+    const [selectedWorkout, setSelectedWorkout] = useState();
     const [editingWorkout, setEditingWorkout] = useState();
 
     const signOut = () => {
         setUser(null);
-        selectWorkout(null);
+        setSelectedWorkout(null);
         setEditingWorkout(null);
     };
 
-    const saveWorkout = () => {};
+    const saveWorkout = () => {
+        setEditingWorkout(null);
+    };
 
     return (
         <ThemeProvider theme={Theme}>
@@ -36,35 +33,14 @@ const App = () => {
                     <>
                         <WorkoutsList
                             user={user}
-                            selectWorkout={selectWorkout}
+                            selectWorkout={setSelectedWorkout}
                         />
-                        <SlidingPage
+                        <WorkoutPage
                             show={!!selectedWorkout}
-                            hide={() => selectWorkout(null)}
-                            title={
-                                selectedWorkout
-                                    ? selectedWorkout.workoutName
-                                    : ''
-                            }
-                            RightSide={() => (
-                                <IconButton
-                                    onClick={() =>
-                                        setEditingWorkout(selectedWorkout)
-                                    }
-                                >
-                                    <EditIcon style={{ color: 'white' }} />
-                                </IconButton>
-                            )}
-                        >
-                            {selectedWorkout && (
-                                <WorkoutPage
-                                    workout={selectedWorkout}
-                                    editWorkout={() =>
-                                        setEditingWorkout(selectedWorkout)
-                                    }
-                                />
-                            )}
-                        </SlidingPage>
+                            hide={() => setSelectedWorkout(null)}
+                            workout={selectedWorkout}
+                            setEditingWorkout={setEditingWorkout}
+                        />
                         <WorkoutEdit
                             show={!!editingWorkout}
                             hide={() => setEditingWorkout(null)}
