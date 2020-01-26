@@ -122,7 +122,11 @@ const WorkoutPage = ({ workout, show, hide, setEditingWorkout }) => (
     <SlidingPage
         show={show}
         hide={hide}
-        Title={() => <Typography>{workout && workout.workoutName}</Typography>}
+        Title={() => (
+            <Typography style={{ fontSize: '20px' }}>
+                {workout && workout.workoutName}
+            </Typography>
+        )}
         RightSide={() => (
             <IconButton onClick={() => setEditingWorkout(workout)}>
                 <EditIcon style={{ color: 'white' }} />
