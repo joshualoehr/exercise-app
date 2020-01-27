@@ -311,7 +311,7 @@ const WorkoutEditContent = () => {
                 {workoutExercises.map((exercise, i) => (
                     <Fragment key={i}>
                         <WorkoutExerciseCard
-                            key={exercise.exerciseId}
+                            key={exercise.id}
                             exercise={exercise}
                         />
                         <WorkoutExerciseReorderDrop key={i} index={i + 1} />
@@ -323,7 +323,7 @@ const WorkoutEditContent = () => {
                     <AddExerciseButton />
                 )}
             </div>
-            {editedWorkout.workoutId && <DeleteWorkoutButton />}
+            {editedWorkout.id && <DeleteWorkoutButton />}
             <WorkoutExerciseEditDialog />
             <DeleteWorkoutDialog />
         </Container>

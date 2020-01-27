@@ -60,7 +60,7 @@ const WorkoutsList = () => {
             </Typography>
             {workouts ? (
                 workouts.map(workout => (
-                    <WorkoutCard key={workout.workoutId} workout={workout} />
+                    <WorkoutCard key={workout.id} workout={workout} />
                 ))
             ) : (
                 <div className={classes.progressContainer}>

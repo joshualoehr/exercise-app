@@ -46,7 +46,7 @@ const WorkoutHistory = () => {
                 workoutHistory.length ? (
                     workoutHistory.map(workout => (
                         <Card
-                            key={workout.workoutId}
+                            key={workout.id}
                             className={classes.card}
                             onClick={() =>
                                 dispatch(setWorkoutInstance(workout))

@@ -58,7 +58,7 @@ const WorkoutPageContent = () => {
             <div style={{ width: '100%' }}>
                 {selectedWorkout.workoutExercises.map(exercise => (
                     <div
-                        key={exercise.exerciseId}
+                        key={exercise.id}
                         className={classes.workoutExerciseContainer}
                     >
                         <Typography style={{ fontWeight: 'bold' }}>

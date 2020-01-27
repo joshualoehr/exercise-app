@@ -68,10 +68,7 @@ const WorkoutCard = ({ workout }) => {
                                 {exercise}
                             </Typography>
                         ) : (
-                            <Typography
-                                variant="body2"
-                                key={exercise.exerciseId}
-                            >
+                            <Typography variant="body2" key={exercise.id}>
                                 {exercise.exerciseName} {exercise.numSets}x
                                 {exercise.numReps}
                             </Typography>

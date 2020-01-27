@@ -15,7 +15,7 @@ const schema = {
             items: {
                 type: 'object',
                 properties: {
-                    userId: {
+                    id: {
                         type: 'integer',
                         unique: true,
                         minimum: 1
@@ -25,7 +25,7 @@ const schema = {
                         faker: 'name.findName'
                     }
                 },
-                required: ['userId', 'displayName']
+                required: ['id', 'displayName']
             }
         },
         workouts: {
@@ -35,7 +35,7 @@ const schema = {
             items: {
                 type: 'object',
                 properties: {
-                    workoutId: {
+                    id: {
                         type: 'integer',
                         unique: true,
                         minimum: 1
@@ -51,7 +51,7 @@ const schema = {
                         items: {
                             type: 'object',
                             properties: {
-                                exerciseId: {
+                                id: {
                                     type: 'integer',
                                     unique: true,
                                     minimum: 1
@@ -83,7 +83,7 @@ const schema = {
                                 }
                             },
                             required: [
-                                'exerciseId',
+                                'id',
                                 'exerciseName',
                                 'numSets',
                                 'numReps',
@@ -93,7 +93,7 @@ const schema = {
                     }
                 },
                 required: [
-                    'workoutId',
+                    'id',
                     'workoutName',
                     'nextWeight',
                     'workoutExercises'
@@ -107,7 +107,7 @@ const schema = {
             items: {
                 type: 'object',
                 properties: {
-                    workoutId: {
+                    id: {
                         type: 'integer',
                         unique: true,
                         minimum: 1
@@ -175,7 +175,7 @@ const schema = {
                         }
                     }
                 },
-                required: ['workoutId', 'date', 'exercises']
+                required: ['id', 'date', 'exercises']
             }
         }
     },

@@ -32,7 +32,7 @@ const workoutsSlice = createSlice({
             let { workoutExercises } = state.editedWorkout;
 
             const currentIndex = workoutExercises.findIndex(
-                e => e.exerciseId === exercise.exerciseId
+                e => e.id === exercise.id
             );
 
             if (currentIndex !== newIndex) {
@@ -63,7 +63,7 @@ const workoutsSlice = createSlice({
         deleteWorkout(state) {
             const deletedWorkout = state.editedWorkout;
             state.workouts = state.workouts.reduce((acc, workout) => {
-                if (workout.workoutId === deletedWorkout.workoutId) {
+                if (workout.id === deletedWorkout.id) {
                     return acc;
                 } else {
                     return [...acc, workout];
@@ -72,34 +72,32 @@ const workoutsSlice = createSlice({
         },
         saveEditedWorkout(state) {
             const savedWorkout = state.editedWorkout;
-            if (!savedWorkout.workoutId) {
-                savedWorkout.workoutId = Math.floor(Math.random() * 10000);
+            if (!savedWorkout.id) {
+                savedWorkout.id = Math.floor(Math.random() * 10000);
                 state.workouts.push(savedWorkout);
             } else {
                 state.workouts = state.workouts.reduce((acc, workout) => {
-                    if (workout.workoutId === savedWorkout.workoutId) {
+                    if (workout.id === savedWorkout.id) {
                         return [...acc, savedWorkout];
                     } else {
                         return [...acc, workout];
                     }
                 }, []);
 
-                if (
-                    state.selectedWorkout.workoutId === savedWorkout.workoutId
-                ) {
+                if (state.selectedWorkout.id === savedWorkout.id) {
                     state.selectedWorkout = savedWorkout;
                 }
             }
         },
         saveEditedExercise(state) {
             const savedExercise = state.editedExercise;
-            if (!savedExercise.exerciseId) {
-                savedExercise.exerciseId = Math.floor(Math.random() * 10000);
+            if (!savedExercise.id) {
+                savedExercise.id = Math.floor(Math.random() * 10000);
                 state.editedWorkout.workoutExercises.push(savedExercise);
             } else {
                 state.editedWorkout.workoutExercises = state.editedWorkout.workoutExercises.reduce(
                     (acc, exercise) => {
-                        if (exercise.exerciseId === savedExercise.exerciseId) {
+                        if (exercise.id === savedExercise.id) {
                             return [...acc, savedExercise];
                         } else {
                             return [...acc, exercise];
