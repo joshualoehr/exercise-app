@@ -8,7 +8,6 @@ const workoutsSlice = createSlice({
         editedWorkout: null,
         editedExercise: null,
         workoutHistory: null,
-        workoutInstance: null,
         showDeleteDialog: false
     },
     reducers: {
@@ -53,9 +52,6 @@ const workoutsSlice = createSlice({
         },
         setWorkoutHistory(state, action) {
             state.workoutHistory = action.payload;
-        },
-        setWorkoutInstance(state, action) {
-            state.workoutInstance = action.payload;
         },
         setShowDeleteDialog(state, action) {
             state.showDeleteDialog = action.payload;
@@ -138,7 +134,6 @@ export const {
     editWorkoutName,
     reorderWorkoutExercises,
     setWorkoutHistory,
-    setWorkoutInstance,
     setShowDeleteDialog,
     deleteWorkout,
     saveEditedWorkout,

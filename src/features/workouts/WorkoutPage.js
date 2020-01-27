@@ -8,14 +8,15 @@ import IconButton from '@material-ui/core/IconButton';
 import EditIcon from '@material-ui/icons/Edit';
 
 import { TOP_BAR_HEIGHT } from '../../config/constants';
+import { newWorkoutInstance } from '../../config/utils';
 import SlidingPage from '../common/SlidingPage';
 import WorkoutHistory from './WorkoutHistory';
 import {
     setSelectedWorkout,
     setEditedWorkout,
-    setWorkoutInstance,
     fetchWorkoutHistory
 } from './workoutsSlice';
+import { setWorkoutInstance } from '../workoutInstance/workoutInstanceSlice';
 
 const useStyles = makeStyles(() => ({
     button: {
@@ -48,7 +49,11 @@ const WorkoutPageContent = () => {
     return (
         <Container className={classes.container}>
             <Button
-                onClick={() => dispatch(setWorkoutInstance(selectedWorkout))}
+                onClick={() =>
+                    dispatch(
+                        setWorkoutInstance(newWorkoutInstance(selectedWorkout))
+                    )
+                }
                 variant="contained"
                 color="primary"
                 className={classes.button}

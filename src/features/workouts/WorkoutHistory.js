@@ -6,7 +6,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import { setWorkoutInstance } from './workoutsSlice';
+import { setWorkoutInstance } from '../workoutInstance/workoutInstanceSlice';
 
 const useStyles = makeStyles(theme => ({
     card: {
