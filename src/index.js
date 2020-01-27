@@ -1,11 +1,19 @@
-/* global document */
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { configureStore } from '@reduxjs/toolkit';
+import { Provider } from 'react-redux';
 
 import App from './App';
+import rootReducer from './reducers';
 
-const root = document.createElement('div');
-root.id = 'root';
-document.body.appendChild(root);
+const store = configureStore({
+    reducer: rootReducer
+});
 
-ReactDOM.render(<App />, root);
+const root = document.getElementById('root');
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    root
+);

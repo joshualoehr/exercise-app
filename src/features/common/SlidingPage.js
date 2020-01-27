@@ -7,9 +7,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 
-import { TOP_BAR_HEIGHT_PX } from '../config/constants';
+import { TOP_BAR_HEIGHT_PX } from '../../config/constants';
 
 const useStyles = makeStyles(theme => ({
     appBar: {

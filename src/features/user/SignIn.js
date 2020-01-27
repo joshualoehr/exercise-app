@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
+
+import { selectUser, fetchUsers } from './usersSlice';
 
 const useStyles = makeStyles(theme => ({
     button: {
@@ -22,17 +24,15 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const SignIn = ({ setUser }) => {
+const SignIn = () => {
     const classes = useStyles();
-    const [users, setUsers] = useState();
+    const dispatch = useDispatch();
+
+    const users = useSelector(state => state.users.users);
 
     useEffect(() => {
-        fetch('http://localhost:3001/users')
-            .then(res => res.json())
-            .then(json => {
-                setTimeout(() => setUsers(json), 500);
-            });
-    }, []);
+        dispatch(fetchUsers());
+    }, [dispatch]);
 
     return (
         <Container className={classes.container}>
@@ -47,7 +47,7 @@ const SignIn = ({ setUser }) => {
                             variant="contained"
                             color="primary"
                             key={user.userId}
-                            onClick={() => setUser(user)}
+                            onClick={() => dispatch(selectUser(user))}
                             className={`${classes.button} ${
                                 i !== users.length
                                     ? classes.buttonWithSpacing
@@ -63,10 +63,6 @@ const SignIn = ({ setUser }) => {
             )}
         </Container>
     );
-};
-
-SignIn.propTypes = {
-    setUser: PropTypes.func
 };
 
 export default SignIn;

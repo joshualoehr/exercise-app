@@ -1,64 +1,34 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { shallowEqual, useSelector, useDispatch } from 'react-redux';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { DndProvider } from 'react-dnd';
 import Backend from 'react-dnd-touch-backend';
 
 import Theme from './Theme';
-import {
-    Frame,
-    SignIn,
-    WorkoutEdit,
-    WorkoutsList,
-    WorkoutPage
-} from './components';
+import WorkoutEdit from './features/workouts/WorkoutEdit';
+import WorkoutsList from './features/workouts/WorkoutsList';
+import WorkoutPage from './features/workouts/WorkoutPage';
+import Frame from './features/common/Frame';
+import SignIn from './features/user/SignIn';
+import { fetchUsers } from './features/user/usersSlice';
 import './App.css';
 
 const App = () => {
-    const [user, setUser] = useState({});
-    const [selectedWorkout, setSelectedWorkout] = useState();
-    const [editingWorkout, setEditingWorkout] = useState();
-
-    const signOut = () => {
-        setUser(null);
-        setSelectedWorkout(null);
-        setEditingWorkout(null);
-    };
-
-    const saveWorkout = () => {
-        setEditingWorkout(null);
-    };
-
-    const deleteWorkout = () => {
-        setEditingWorkout(null);
-        setSelectedWorkout(null);
-    };
+    const dispatch = useDispatch();
+    const { users, user } = useSelector(state => state.users, shallowEqual);
 
     return (
         <DndProvider backend={Backend} options={{ enableMouseEvents: true }}>
             <ThemeProvider theme={Theme}>
-                <Frame showSignOut={!!user} signOut={signOut}>
+                <Frame>
                     {user ? (
                         <>
-                            <WorkoutsList
-                                user={user}
-                                selectWorkout={setSelectedWorkout}
-                            />
-                            <WorkoutPage
-                                show={!!selectedWorkout}
-                                hide={() => setSelectedWorkout(null)}
-                                workout={selectedWorkout}
-                                setEditingWorkout={setEditingWorkout}
-                            />
-                            <WorkoutEdit
-                                show={!!editingWorkout}
-                                hide={() => setEditingWorkout(null)}
-                                workout={editingWorkout}
-                                onSave={saveWorkout}
-                                deleteWorkout={deleteWorkout}
-                            />
+                            <WorkoutsList />
+                            <WorkoutPage />
+                            <WorkoutEdit />
                         </>
                     ) : (
-                        <SignIn setUser={setUser} />
+                        <SignIn users={users} />
                     )}
                 </Frame>
             </ThemeProvider>

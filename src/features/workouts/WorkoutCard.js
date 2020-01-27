@@ -1,10 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+
+import { setSelectedWorkout } from './workoutsSlice';
 
 const useStyles = makeStyles(theme => ({
     card: {
@@ -29,6 +32,9 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center'
+    },
+    workoutName: {
+        marginBottom: theme.spacing(1)
     }
 }));
 
@@ -38,14 +44,18 @@ const truncateExercises = (exercises, max = 3) => {
     return [...exercises.slice(0, max), `...and ${extra} more`];
 };
 
-const WorkoutCard = ({ selectWorkout, workout }) => {
+const WorkoutCard = ({ workout }) => {
     const classes = useStyles();
+    const dispatch = useDispatch();
 
     return (
-        <Card className={classes.card} onClick={selectWorkout}>
+        <Card
+            className={classes.card}
+            onClick={() => dispatch(setSelectedWorkout(workout))}
+        >
             <CardContent className={classes.cardContent}>
                 <div>
-                    <Typography variant="h5" style={{ marginBottom: '6px' }}>
+                    <Typography variant="h5" className={classes.workoutName}>
                         {workout.workoutName}
                     </Typography>
                     {truncateExercises(workout.workoutExercises).map(exercise =>
@@ -81,7 +91,6 @@ const WorkoutCard = ({ selectWorkout, workout }) => {
 };
 
 WorkoutCard.propTypes = {
-    selectWorkout: PropTypes.func,
     workout: PropTypes.object
 };
 

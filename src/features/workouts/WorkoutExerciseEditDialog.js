@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
+import { shallowEqual, useSelector, useDispatch } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -9,6 +9,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Divider from '@material-ui/core/Divider';
+
+import { setEditedExercise, saveEditedExercise } from './workoutsSlice';
 
 const useStyles = makeStyles(theme => ({
     dialog: {
@@ -38,12 +40,28 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const ExerciseEditContent = ({ exercise, onCancel, onSave }) => {
+const WorkoutExerciseEditDialogContent = () => {
     const classes = useStyles();
-    const [exerciseName, setExerciseName] = useState(exercise.exerciseName);
-    const [numReps, setNumReps] = useState(exercise.numReps);
-    const [numSets, setNumSets] = useState(exercise.numSets);
-    const [weight, setWeight] = useState(exercise.weight);
+    const dispatch = useDispatch();
+    let editedExercise = useSelector(
+        state => state.workouts.editedExercise,
+        shallowEqual
+    );
+    if (editedExercise === null) editedExercise = {};
+    const { exerciseName, numReps, numSets, weight } = editedExercise;
+
+    const updateEditedExercise = (key, changeEvent, convert = i => i) =>
+        dispatch(
+            setEditedExercise({
+                ...editedExercise,
+                [key]: convert(changeEvent.target.value)
+            })
+        );
+    const updateName = e => updateEditedExercise('exerciseName', e);
+    const updateSets = e => updateEditedExercise('numSets', e, parseInt);
+    const updateReps = e => updateEditedExercise('numReps', e, parseInt);
+    const updateWeight = e => updateEditedExercise('weight', e, parseInt);
+
     return (
         <>
             <DialogContent className={classes.dialogContent}>
@@ -53,7 +71,7 @@ const ExerciseEditContent = ({ exercise, onCancel, onSave }) => {
                     defaultValue={exerciseName || ''}
                     placeholder={exerciseName || 'New Exercise'}
                     className={classes.nameInput}
-                    onChange={e => setExerciseName(e.target.value)}
+                    onChange={updateName}
                 />
                 <div className={classes.inputContainer}>
                     <Typography>Sets:</Typography>
@@ -64,7 +82,7 @@ const ExerciseEditContent = ({ exercise, onCancel, onSave }) => {
                         inputProps={{
                             style: { textAlign: 'right' }
                         }}
-                        onChange={e => setNumSets(parseInt(e.target.value))}
+                        onChange={updateSets}
                     />
                 </div>
                 <div className={classes.inputContainer}>
@@ -76,7 +94,7 @@ const ExerciseEditContent = ({ exercise, onCancel, onSave }) => {
                         inputProps={{
                             style: { textAlign: 'right' }
                         }}
-                        onChange={e => setNumReps(parseInt(e.target.value))}
+                        onChange={updateReps}
                     />
                 </div>
                 <div className={classes.inputContainer}>
@@ -95,30 +113,26 @@ const ExerciseEditContent = ({ exercise, onCancel, onSave }) => {
                                 </InputAdornment>
                             )
                         }}
-                        onChange={e => setWeight(parseInt(e.target.value))}
+                        onChange={updateWeight}
                     />
                 </div>
             </DialogContent>
             <Divider />
             <DialogActions className={classes.dialogActions}>
-                <Button color="primary" onClick={onCancel}>
+                <Button
+                    color="primary"
+                    onClick={() => dispatch(setEditedExercise(null))}
+                >
                     Cancel
                 </Button>
                 <Button
                     color="primary"
                     variant="outlined"
-                    onClick={() =>
-                        onSave({
-                            exerciseId: exercise.exerciseId,
-                            exerciseName,
-                            numSets,
-                            numReps,
-                            weight
-                        })
-                    }
-                    disabled={
-                        !(!!exerciseName && !!numSets && !!numReps && !!weight)
-                    }
+                    onClick={() => {
+                        dispatch(saveEditedExercise());
+                        dispatch(setEditedExercise(null));
+                    }}
+                    disabled={!(exerciseName && numSets && numReps && weight)}
                 >
                     Save
                 </Button>
@@ -127,35 +141,18 @@ const ExerciseEditContent = ({ exercise, onCancel, onSave }) => {
     );
 };
 
-const ExerciseEdit = ({ exercise, onCancel, onSave }) => {
+const WorkoutExerciseEditDialog = () => {
     const classes = useStyles();
+    const editedExercise = useSelector(state => state.workouts.editedExercise);
     return (
         <Dialog
-            open={!!exercise}
+            open={!!editedExercise}
             aria-labelledby="add or edit exercise"
             className={classes.dialog}
         >
-            {exercise && (
-                <ExerciseEditContent
-                    exercise={exercise}
-                    onCancel={onCancel}
-                    onSave={onSave}
-                />
-            )}
+            <WorkoutExerciseEditDialogContent />
         </Dialog>
     );
 };
 
-ExerciseEditContent.propTypes = {
-    exercise: PropTypes.object,
-    onCancel: PropTypes.func,
-    onSave: PropTypes.func
-};
-
-ExerciseEdit.propTypes = {
-    exercise: PropTypes.object,
-    onCancel: PropTypes.func,
-    onSave: PropTypes.func
-};
-
-export default ExerciseEdit;
+export default WorkoutExerciseEditDialog;
