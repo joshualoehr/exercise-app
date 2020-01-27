@@ -69,12 +69,24 @@ const workoutsSlice = createSlice({
                     return [...acc, workout];
                 }
             }, []);
+
+            fetch(`http://localhost:3001/workouts/${deletedWorkout.id}`, {
+                method: 'DELETE'
+            });
         },
         saveEditedWorkout(state) {
             const savedWorkout = state.editedWorkout;
             if (!savedWorkout.id) {
                 savedWorkout.id = Math.floor(Math.random() * 10000);
                 state.workouts.push(savedWorkout);
+
+                fetch(`http://localhost:3001/workouts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(savedWorkout)
+                });
             } else {
                 state.workouts = state.workouts.reduce((acc, workout) => {
                     if (workout.id === savedWorkout.id) {
@@ -87,6 +99,14 @@ const workoutsSlice = createSlice({
                 if (state.selectedWorkout.id === savedWorkout.id) {
                     state.selectedWorkout = savedWorkout;
                 }
+
+                fetch(`http://localhost:3001/workouts/${savedWorkout.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(savedWorkout)
+                });
             }
         },
         saveEditedExercise(state) {
