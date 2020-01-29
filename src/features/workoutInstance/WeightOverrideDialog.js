@@ -60,7 +60,6 @@ const WeightOverrideDialogContent = () => {
     return (
         <>
             <DialogContent className={classes.dialogContent}>
-                <Typography variant="h6">Override Weight</Typography>
                 <div className={classes.inputContainer}>
                     <Typography>Weight:</Typography>
                     <TextField

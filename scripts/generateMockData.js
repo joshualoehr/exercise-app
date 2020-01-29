@@ -123,6 +123,11 @@ const schema = {
                         items: {
                             type: 'object',
                             properties: {
+                                id: {
+                                    type: 'integer',
+                                    unique: true,
+                                    minimum: 1
+                                },
                                 exerciseName: {
                                     type: 'string',
                                     enum: [
@@ -166,6 +171,7 @@ const schema = {
                                 }
                             },
                             required: [
+                                'id',
                                 'exerciseName',
                                 'numSets',
                                 'numReps',

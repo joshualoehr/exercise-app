@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 
 import { setSelectedWorkout } from './workoutsSlice';
+import { truncateList } from '../../config/utils';
 
 const useStyles = makeStyles(theme => ({
     card: {
@@ -38,12 +39,6 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const truncateExercises = (exercises, max = 3) => {
-    if (exercises.length <= max) return exercises;
-    const extra = exercises.length - max;
-    return [...exercises.slice(0, max), `...and ${extra} more`];
-};
-
 const WorkoutCard = ({ workout }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -58,7 +53,7 @@ const WorkoutCard = ({ workout }) => {
                     <Typography variant="h5" className={classes.workoutName}>
                         {workout.workoutName}
                     </Typography>
-                    {truncateExercises(workout.workoutExercises).map(exercise =>
+                    {truncateList(workout.workoutExercises).map(exercise =>
                         typeof exercise === 'string' ? (
                             <Typography
                                 variant="body2"

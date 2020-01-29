@@ -11,3 +11,9 @@ export const newWorkoutInstance = (workout, userWeight) => ({
     })),
     recordedWeight: userWeight
 });
+
+export const truncateList = (list, max = 3) => {
+    if (list.length <= max) return list;
+    const extra = list.length - max;
+    return [...list.slice(0, max), `...and ${extra} more`];
+};
