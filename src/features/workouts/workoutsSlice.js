@@ -153,9 +153,25 @@ export const fetchWorkouts = user => dispatch =>
         )
         .then(workouts => dispatch(setWorkouts(workouts)));
 
+const sortWorkoutHistory = workoutHistory => [
+    ...Array.from(workoutHistory).sort((a, b) => b.date - a.date)
+];
 export const fetchWorkoutHistory = workout => dispatch =>
     fetch('http://localhost:3001/workoutHistory')
         .then(res => res.json())
+        .then(workoutHistory =>
+            workoutHistory.map(({ date, ...wh }) => ({
+                ...wh,
+                date: new Date(date)
+            }))
+        )
+        .then(sortWorkoutHistory)
+        .then(workoutHistory =>
+            workoutHistory.map(({ date, ...wh }) => ({
+                ...wh,
+                date: date.toISOString()
+            }))
+        )
         .then(workoutHistory => dispatch(setWorkoutHistory(workoutHistory)));
 
 export default workoutsSlice.reducer;

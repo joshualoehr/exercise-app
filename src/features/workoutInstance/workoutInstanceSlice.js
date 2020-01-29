@@ -53,6 +53,9 @@ const workoutInstanceSlice = createSlice({
         },
         updateRecordedWeight(state, action) {
             state.workoutInstance.recordedWeight = action.payload;
+        },
+        saveWorkoutInstance() {
+            console.log('TODO: save workoutInstance to backend');
         }
     }
 });
@@ -62,7 +65,8 @@ export const {
     setEditedExercise,
     decrementSetInstanceReps,
     saveEditedExercise,
-    updateRecordedWeight
+    updateRecordedWeight,
+    saveWorkoutInstance
 } = workoutInstanceSlice.actions;
 
 export default workoutInstanceSlice.reducer;

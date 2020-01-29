@@ -114,7 +114,7 @@ const schema = {
                     },
                     date: {
                         type: 'string',
-                        faker: 'date.recent'
+                        faker: 'date.past'
                     },
                     exercises: {
                         type: 'array',
@@ -138,12 +138,7 @@ const schema = {
                                         'Deadlift'
                                     ]
                                 },
-                                numSets: {
-                                    type: 'integer',
-                                    minimum: 3,
-                                    maximum: 10
-                                },
-                                numReps: {
+                                maxReps: {
                                     type: 'integer',
                                     minimum: 5,
                                     maximum: 10
@@ -173,8 +168,7 @@ const schema = {
                             required: [
                                 'id',
                                 'exerciseName',
-                                'numSets',
-                                'numReps',
+                                'maxReps',
                                 'weight',
                                 'sets'
                             ]

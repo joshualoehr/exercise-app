@@ -11,7 +11,10 @@ import SlidingPage from '../common/SlidingPage';
 import ExerciseInstanceCard from './ExerciseInstanceCard';
 import BodyWeightCard from './BodyWeightCard';
 import WeightOverrideDialog from './WeightOverrideDialog';
-import { setWorkoutInstance } from './workoutInstanceSlice';
+import {
+    setWorkoutInstance,
+    saveWorkoutInstance
+} from './workoutInstanceSlice';
 
 const useStyles = makeStyles(() => ({
     outerContainer: {
@@ -87,7 +90,7 @@ const WorkoutInstance = () => {
                     disabled={!atLeastOneSetComplete}
                     style={{ color: atLeastOneSetComplete ? 'white' : null }}
                 >
-                    Finish
+                    {workoutInstance && workoutInstance.id ? 'Done' : 'Finish'}
                 </Button>
             )}
             BackIcon={CloseIcon}

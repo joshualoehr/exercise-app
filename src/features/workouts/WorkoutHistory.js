@@ -52,14 +52,14 @@ const useStyles = makeStyles(theme => ({
 
 const ExerciseInstance = ({ exerciseInstance }) => {
     const classes = useStyles();
-    const { numReps, exerciseName, numSets, sets, weight } = exerciseInstance;
+    const { maxReps, exerciseName, sets, weight } = exerciseInstance;
 
     const perfectExercise = sets.every(
-        ({ completedReps }) => completedReps === numReps
+        ({ completedReps }) => completedReps === maxReps
     );
 
     const concatSets = perfectExercise
-        ? `${numSets}x${numReps}`
+        ? `${sets.length}x${maxReps}`
         : sets.map(({ completedReps }) => completedReps).join('/');
 
     return (
