@@ -3,11 +3,19 @@ import { createSlice } from '@reduxjs/toolkit';
 const workoutInstanceSlice = createSlice({
     name: 'workoutInstance',
     initialState: {
-        workoutInstance: null
+        workoutInstance: null,
+        editedExercise: null,
+        showWeightOverrideDialog: false
     },
     reducers: {
         setWorkoutInstance(state, action) {
             state.workoutInstance = action.payload;
+        },
+        setEditedExercise(state, action) {
+            state.editedExercise = action.payload;
+        },
+        setShowWeightOverrideDialog(state, action) {
+            state.showWeightOverrideDialog = action.payload;
         },
         decrementSetInstanceReps(state, action) {
             const { exercise, index } = action.payload;
@@ -32,6 +40,17 @@ const workoutInstanceSlice = createSlice({
                 []
             );
         },
+        saveEditedExercise(state) {
+            state.workoutInstance.exercises = state.workoutInstance.exercises.reduce(
+                (acc, ex) => [
+                    ...acc,
+                    ex.id === state.editedExercise.id
+                        ? state.editedExercise
+                        : ex
+                ],
+                []
+            );
+        },
         updateRecordedWeight(state, action) {
             state.workoutInstance.recordedWeight = action.payload;
         }
@@ -40,7 +59,9 @@ const workoutInstanceSlice = createSlice({
 
 export const {
     setWorkoutInstance,
+    setEditedExercise,
     decrementSetInstanceReps,
+    saveEditedExercise,
     updateRecordedWeight
 } = workoutInstanceSlice.actions;
 

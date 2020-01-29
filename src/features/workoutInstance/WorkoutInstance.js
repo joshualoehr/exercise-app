@@ -10,6 +10,7 @@ import { TOP_BAR_HEIGHT } from '../../config/constants';
 import SlidingPage from '../common/SlidingPage';
 import ExerciseInstanceCard from './ExerciseInstanceCard';
 import BodyWeightCard from './BodyWeightCard';
+import WeightOverrideDialog from './WeightOverrideDialog';
 import { setWorkoutInstance } from './workoutInstanceSlice';
 
 const useStyles = makeStyles(() => ({
@@ -42,6 +43,7 @@ const WorkoutInstanceContent = () => {
                 />
             ))}
             <BodyWeightCard />
+            <WeightOverrideDialog />
         </Container>
     );
 };

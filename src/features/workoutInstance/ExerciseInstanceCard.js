@@ -6,7 +6,10 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
-import { decrementSetInstanceReps } from './workoutInstanceSlice';
+import {
+    setEditedExercise,
+    decrementSetInstanceReps
+} from './workoutInstanceSlice';
 
 const useStyles = makeStyles(theme => ({
     card: {
@@ -82,7 +85,13 @@ const ExerciseInstanceCard = ({ exerciseInstance }) => {
                         {exerciseInstance.sets.length}x
                         {exerciseInstance.maxReps}
                         {' \u2014 '}
-                        {exerciseInstance.weight}lbs
+                        <span
+                            onClick={() =>
+                                dispatch(setEditedExercise(exerciseInstance))
+                            }
+                        >
+                            {exerciseInstance.weight}lbs
+                        </span>
                     </Typography>
                 </div>
                 <div className={classes.sets}>
