@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import AppBar from '@material-ui/core/AppBar';
 import { makeStyles } from '@material-ui/core/styles';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import Typography from '@material-ui/core/Typography';
+import MenuIcon from '@material-ui/icons/Menu';
 
 import { TOP_BAR_HEIGHT_PX } from '../../config/constants';
-import { selectUser } from '../user/usersSlice';
+import { setShowAppSettings } from '../settings/settingsSlice';
 
 const useStyles = makeStyles(() => ({
     appContent: {
@@ -35,7 +35,7 @@ const useStyles = makeStyles(() => ({
     logoContainer: {
         display: 'flex',
         flexDirection: 'row',
-        marginTop: '4px'
+        margin: '4px auto 0 auto'
     }
 }));
 
@@ -59,23 +59,21 @@ const Logo = () => {
 const Frame = ({ children }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const user = useSelector(state => state.users.user);
 
     return (
         <>
             <AppBar className={classes.topBar}>
                 <Toolbar className={classes.toolbar}>
-                    <div style={{ width: '48px' }}></div>
+                    <IconButton
+                        edge="start"
+                        color="inherit"
+                        aria-label="menu"
+                        onClick={() => dispatch(setShowAppSettings(true))}
+                    >
+                        <MenuIcon />
+                    </IconButton>
                     <Logo />
-                    {user && (
-                        <IconButton
-                            edge="end"
-                            aria-label="sign out"
-                            onClick={() => dispatch(selectUser(null))}
-                        >
-                            <ExitToAppIcon style={{ color: 'white' }} />
-                        </IconButton>
-                    )}
+                    <div style={{ width: '48px' }}></div>
                 </Toolbar>
             </AppBar>
             <div style={{ height: TOP_BAR_HEIGHT_PX }}></div>

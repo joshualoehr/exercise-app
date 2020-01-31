@@ -6,7 +6,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import { selectUser, fetchUsers } from './usersSlice';
+import { setUser } from '../../features/settings/settingsSlice';
+import { fetchUsers } from './usersSlice';
 
 const useStyles = makeStyles(theme => ({
     button: {
@@ -47,7 +48,7 @@ const SignIn = () => {
                             variant="contained"
                             color="primary"
                             key={user.id}
-                            onClick={() => dispatch(selectUser(user))}
+                            onClick={() => dispatch(setUser(user))}
                             className={`${classes.button} ${
                                 i !== users.length
                                     ? classes.buttonWithSpacing
