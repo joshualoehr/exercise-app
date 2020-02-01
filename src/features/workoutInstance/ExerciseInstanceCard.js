@@ -31,20 +31,20 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         flexDirection: 'row',
         overflow: 'auto',
-        padding: theme.spacing(2)
+        padding: `${theme.spacing(2)}px 0`
     },
     set: {
         display: 'flex',
-        height: '48px',
-        width: '48px',
+        height: '36px',
+        width: '36px',
         borderRadius: '30px',
         backgroundColor: theme.palette.primary.main,
         color: 'white',
         marginRight: theme.spacing(2)
     },
     emptySet: {
-        height: '48px',
-        width: '48px',
+        height: '36px',
+        width: '36px',
         borderRadius: '30px',
         border: `1px solid ${theme.palette.primary.main}`,
         marginRight: theme.spacing(2)
@@ -56,7 +56,7 @@ const SetInstance = ({ set, decrementReps }) => {
 
     return set.completedReps !== null ? (
         <div className={classes.set} onClick={decrementReps}>
-            <Typography style={{ margin: 'auto' }} variant="h5">
+            <Typography style={{ margin: 'auto' }} variant="h6">
                 {set.completedReps}
             </Typography>
         </div>
@@ -75,11 +75,11 @@ const ExerciseInstanceCard = ({ exerciseInstance }) => {
     const dispatch = useDispatch();
 
     const decrementReps = index => {
+        dispatch(restartTimer(DEFAULT_REST_DURATION));
+        dispatch(setShowTimer(true));
         dispatch(
             decrementSetInstanceReps({ exercise: exerciseInstance, index })
         );
-        dispatch(restartTimer(DEFAULT_REST_DURATION));
-        dispatch(setShowTimer(true));
     };
 
     return (

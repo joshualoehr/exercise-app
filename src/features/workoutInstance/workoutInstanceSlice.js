@@ -22,6 +22,7 @@ const workoutInstanceSlice = createSlice({
         },
         decrementSetInstanceReps(state, action) {
             const { exercise, index } = action.payload;
+            let hideTimer = false;
             state.workoutInstance.exercises = state.workoutInstance.exercises.reduce(
                 (acc, ex) => {
                     if (ex.id === exercise.id) {
@@ -31,6 +32,7 @@ const workoutInstanceSlice = createSlice({
                                 completedReps = ex.maxReps;
                                 break;
                             case 0:
+                                hideTimer = true;
                                 completedReps = null;
                                 break;
                             default:
@@ -42,6 +44,14 @@ const workoutInstanceSlice = createSlice({
                 },
                 []
             );
+
+            if (hideTimer) {
+                state.showTimer = false;
+                if (state.intervalID !== null) {
+                    clearInterval(state.intervalID);
+                    state.intervalID = null;
+                }
+            }
         },
         saveEditedExercise(state) {
             state.workoutInstance.exercises = state.workoutInstance.exercises.reduce(
