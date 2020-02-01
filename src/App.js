@@ -23,16 +23,11 @@ const App = () => {
                 <Frame>
                     <>
                         <AppSettings />
-                        {user ? (
-                            <>
-                                <WorkoutsList />
-                                <WorkoutPage />
-                                <WorkoutEdit />
-                                <WorkoutInstance />
-                            </>
-                        ) : (
-                            <SignIn />
-                        )}
+                        <SignIn />
+                        <WorkoutsList />
+                        <WorkoutPage />
+                        <WorkoutEdit />
+                        <WorkoutInstance />
                     </>
                 </Frame>
             </ThemeProvider>

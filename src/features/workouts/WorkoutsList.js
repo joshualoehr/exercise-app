@@ -40,9 +40,7 @@ const WorkoutsList = () => {
     const workouts = useSelector(state => state.workouts.workouts);
 
     useEffect(() => {
-        if (user) {
-            dispatch(fetchWorkouts(user));
-        }
+        dispatch(fetchWorkouts(user));
     }, [dispatch, user]);
 
     return (

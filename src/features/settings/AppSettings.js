@@ -11,7 +11,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
-import { setShowAppSettings, setUser } from './settingsSlice';
+import {
+    setShowAppSettings,
+    setShowSignInPage,
+    setUser
+} from './settingsSlice';
 
 const useStyles = makeStyles(theme => ({
     drawer: {
@@ -91,7 +95,7 @@ const AppSettingsContent = () => {
                         if (user) {
                             dispatch(setUser(null));
                         } else {
-                            dispatch(setUser(null));
+                            dispatch(setShowSignInPage(true));
                         }
                         dispatch(setShowAppSettings(false));
                     }}

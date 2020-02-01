@@ -26,7 +26,7 @@ const useStyles = makeStyles(theme => ({
         justifyContent: 'space-between'
     },
     extraText: {
-        opacity: 0.7
+        color: 'rgb(130,130,130)'
     },
     iconContainer: {
         height: '100%',

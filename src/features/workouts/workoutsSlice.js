@@ -140,7 +140,8 @@ export const {
     saveEditedExercise
 } = workoutsSlice.actions;
 
-export const fetchWorkouts = user => dispatch =>
+export const fetchWorkouts = user => dispatch => {
+    dispatch(setWorkouts(null));
     fetch('http://localhost:3001/workouts')
         .then(res => res.json())
         .then(json =>
@@ -152,6 +153,7 @@ export const fetchWorkouts = user => dispatch =>
             }))
         )
         .then(workouts => dispatch(setWorkouts(workouts)));
+};
 
 const sortWorkoutHistory = workoutHistory => [
     ...Array.from(workoutHistory).sort((a, b) => b.date - a.date)
