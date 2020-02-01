@@ -5,7 +5,10 @@ const workoutInstanceSlice = createSlice({
     initialState: {
         workoutInstance: null,
         editedExercise: null,
-        showWeightOverrideDialog: false
+        showWeightOverrideDialog: false,
+        showTimer: false,
+        timeRemaining: 0,
+        intervalID: null
     },
     reducers: {
         setWorkoutInstance(state, action) {
@@ -56,6 +59,29 @@ const workoutInstanceSlice = createSlice({
         },
         saveWorkoutInstance() {
             console.log('TODO: save workoutInstance to backend');
+        },
+        setShowTimer(state, action) {
+            state.showTimer = action.payload;
+            if (state.showTimer === false && state.intervalID !== null) {
+                clearInterval(state.intervalID);
+                state.intervalID = null;
+            }
+        },
+        decrementTimeRemaining(state) {
+            state.timeRemaining--;
+            if (state.timeRemaining <= -1 && state.intervalID !== null) {
+                clearInterval(state.intervalID);
+                state.intervalID = null;
+            }
+        },
+        resetTimer(state, action) {
+            state.timeRemaining = action.payload;
+            if (state.intervalID !== null) {
+                clearInterval(state.intervalID);
+            }
+        },
+        setintervalID(state, action) {
+            state.intervalID = action.payload;
         }
     }
 });
@@ -66,7 +92,21 @@ export const {
     decrementSetInstanceReps,
     saveEditedExercise,
     updateRecordedWeight,
-    saveWorkoutInstance
+    saveWorkoutInstance,
+    setShowTimer,
+    decrementTimeRemaining,
+    resetTimer,
+    setintervalID
 } = workoutInstanceSlice.actions;
+
+export const restartTimer = timeRemaining => dispatch => {
+    dispatch(resetTimer(timeRemaining));
+
+    const intervalID = setInterval(() => {
+        dispatch(workoutInstanceSlice.actions.decrementTimeRemaining());
+    }, 1000);
+
+    dispatch(setintervalID(intervalID));
+};
 
 export default workoutInstanceSlice.reducer;

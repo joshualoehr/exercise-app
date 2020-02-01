@@ -6,9 +6,12 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 
+import { DEFAULT_REST_DURATION } from '../../config/constants';
 import {
     setEditedExercise,
-    decrementSetInstanceReps
+    decrementSetInstanceReps,
+    setShowTimer,
+    restartTimer
 } from './workoutInstanceSlice';
 
 const useStyles = makeStyles(theme => ({
@@ -71,10 +74,13 @@ const ExerciseInstanceCard = ({ exerciseInstance }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
 
-    const decrementReps = index =>
+    const decrementReps = index => {
         dispatch(
             decrementSetInstanceReps({ exercise: exerciseInstance, index })
         );
+        dispatch(restartTimer(DEFAULT_REST_DURATION));
+        dispatch(setShowTimer(true));
+    };
 
     return (
         <Card className={classes.card}>
