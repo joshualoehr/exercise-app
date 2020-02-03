@@ -27,8 +27,8 @@ import {
     editWorkoutName,
     reorderWorkoutExercises,
     setShowDeleteDialog,
-    deleteWorkout,
-    saveEditedWorkout
+    deleteWorkoutAsync,
+    saveEditedWorkoutAsync
 } from './workoutsSlice';
 
 const useStyles = makeStyles(theme => ({
@@ -273,7 +273,7 @@ const DeleteWorkoutDialog = () => {
             open={showDeleteDialog}
             onCancel={() => dispatch(setShowDeleteDialog(false))}
             onConfirm={() => {
-                dispatch(deleteWorkout());
+                dispatch(deleteWorkoutAsync());
                 dispatch(setShowDeleteDialog(false));
                 dispatch(setEditedWorkout(null));
                 dispatch(setSelectedWorkout(null));
@@ -373,7 +373,7 @@ const WorkoutEdit = () => {
             RightSide={() => (
                 <IconButton
                     onClick={() => {
-                        dispatch(saveEditedWorkout());
+                        dispatch(saveEditedWorkoutAsync());
                         dispatch(setEditedWorkout(null));
                     }}
                     disabled={saveDisabled}

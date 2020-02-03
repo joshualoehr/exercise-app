@@ -90,7 +90,9 @@ const WorkoutPage = () => {
     );
 
     useEffect(() => {
-        dispatch(fetchWorkoutHistory(selectedWorkout));
+        if (selectedWorkout) {
+            dispatch(fetchWorkoutHistory(selectedWorkout));
+        }
     }, [dispatch, selectedWorkout]);
 
     return (

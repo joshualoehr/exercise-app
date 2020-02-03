@@ -92,12 +92,7 @@ const schema = {
                         }
                     }
                 },
-                required: [
-                    'id',
-                    'workoutName',
-                    'nextWeight',
-                    'workoutExercises'
-                ]
+                required: ['id', 'workoutName', 'workoutExercises']
             }
         },
         workoutHistory: {

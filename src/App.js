@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { DndProvider } from 'react-dnd';
 import Backend from 'react-dnd-touch-backend';
@@ -15,8 +14,6 @@ import SignIn from './features/user/SignIn';
 import './App.css';
 
 const App = () => {
-    const user = useSelector(state => state.settings.user);
-
     return (
         <DndProvider backend={Backend} options={{ enableMouseEvents: true }}>
             <ThemeProvider theme={Theme}>

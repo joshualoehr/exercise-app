@@ -14,7 +14,7 @@ import BodyWeightCard from './BodyWeightCard';
 import WeightOverrideDialog from './WeightOverrideDialog';
 import {
     setWorkoutInstance,
-    saveWorkoutInstance
+    saveWorkoutInstanceAsync
 } from './workoutInstanceSlice';
 
 const useStyles = makeStyles(() => ({
@@ -86,7 +86,7 @@ const WorkoutInstance = () => {
             RightSide={() => (
                 <Button
                     onClick={() => {
-                        dispatch(saveWorkoutInstance());
+                        dispatch(saveWorkoutInstanceAsync());
                         dispatch(setWorkoutInstance(null));
                     }}
                     disabled={!atLeastOneSetComplete}

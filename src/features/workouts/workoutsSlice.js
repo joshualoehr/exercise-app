@@ -1,4 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
+import dao from '../../config/dao';
+import { addOrReplace } from '../../config/utils';
 
 const workoutsSlice = createSlice({
     name: 'workouts',
@@ -56,8 +58,8 @@ const workoutsSlice = createSlice({
         setShowDeleteDialog(state, action) {
             state.showDeleteDialog = action.payload;
         },
-        deleteWorkout(state) {
-            const deletedWorkout = state.editedWorkout;
+        deleteWorkout(state, action) {
+            const deletedWorkout = action.payload;
             state.workouts = state.workouts.reduce((acc, workout) => {
                 if (workout.id === deletedWorkout.id) {
                     return acc;
@@ -65,44 +67,16 @@ const workoutsSlice = createSlice({
                     return [...acc, workout];
                 }
             }, []);
-
-            fetch(`http://localhost:3001/workouts/${deletedWorkout.id}`, {
-                method: 'DELETE'
-            });
         },
-        saveEditedWorkout(state) {
-            const savedWorkout = state.editedWorkout;
-            if (!savedWorkout.id) {
-                savedWorkout.id = Math.floor(Math.random() * 10000);
-                state.workouts.push(savedWorkout);
+        saveEditedWorkout(state, action) {
+            const savedWorkout = action.payload;
+            state.workouts = addOrReplace(state.workouts, savedWorkout);
 
-                fetch(`http://localhost:3001/workouts`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(savedWorkout)
-                });
-            } else {
-                state.workouts = state.workouts.reduce((acc, workout) => {
-                    if (workout.id === savedWorkout.id) {
-                        return [...acc, savedWorkout];
-                    } else {
-                        return [...acc, workout];
-                    }
-                }, []);
-
-                if (state.selectedWorkout.id === savedWorkout.id) {
-                    state.selectedWorkout = savedWorkout;
-                }
-
-                fetch(`http://localhost:3001/workouts/${savedWorkout.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(savedWorkout)
-                });
+            if (
+                state.selectedWorkout &&
+                state.selectedWorkout.id === savedWorkout.id
+            ) {
+                state.selectedWorkout = savedWorkout;
             }
         },
         saveEditedExercise(state) {
@@ -122,6 +96,13 @@ const workoutsSlice = createSlice({
                     []
                 );
             }
+        },
+        saveWorkoutInstance(state, action) {
+            const savedWorkoutInstance = action.payload;
+            state.workoutHistory = addOrReplace(
+                state.workoutHistory,
+                savedWorkoutInstance
+            );
         }
     }
 });
@@ -137,43 +118,90 @@ export const {
     setShowDeleteDialog,
     deleteWorkout,
     saveEditedWorkout,
-    saveEditedExercise
+    saveEditedExercise,
+    saveWorkoutInstance
 } = workoutsSlice.actions;
 
-export const fetchWorkouts = user => dispatch => {
-    dispatch(setWorkouts(null));
-    fetch('http://localhost:3001/workouts')
-        .then(res => res.json())
-        .then(json =>
-            json.map(({ workoutName, ...workout }) => ({
-                workoutName:
-                    workoutName.charAt(0).toUpperCase() +
-                    workoutName.substring(1),
-                ...workout
-            }))
+export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
+    const {
+        settings: { user },
+        workouts: { editedWorkout }
+    } = getState();
+
+    const {
+        workoutExercises: exerciseRecords,
+        ...workoutRecord
+    } = editedWorkout;
+
+    const workoutOperation = workoutRecord.id
+        ? dao.workouts.put
+        : dao.workouts.add;
+    const exerciseOperation = ex =>
+        ex.id ? dao.exercises.put(user, ex) : dao.exercises.add(user, ex);
+
+    // Create or update the workout record
+    workoutOperation(user, workoutRecord)
+        // Add workoutId to each exercise record
+        .then(savedWorkout => [
+            exerciseRecords.map(ex => ({ ...ex, workoutId: savedWorkout.id })),
+            savedWorkout
+        ])
+        // Create or update each exercise record
+        .then(([exerciseRecords, savedWorkout]) =>
+            Promise.all(exerciseRecords.map(exerciseOperation)).then(
+                () => savedWorkout
+            )
         )
-        .then(workouts => dispatch(setWorkouts(workouts)));
+        // Update the state with the combined object
+        .then(savedWorkout =>
+            dispatch(
+                saveEditedWorkout({ ...editedWorkout, id: savedWorkout.id })
+            )
+        )
+        .catch(console.error);
 };
 
-const sortWorkoutHistory = workoutHistory => [
-    ...Array.from(workoutHistory).sort((a, b) => b.date - a.date)
+export const fetchWorkouts = () => (dispatch, getState) => {
+    const {
+        settings: { user }
+    } = getState();
+
+    dispatch(setWorkouts(null));
+    dao.workouts
+        .getAll(user)
+        .then(workouts => dispatch(setWorkouts(workouts)))
+        .catch(console.error);
+};
+
+export const deleteWorkoutAsync = () => (dispatch, getState) => {
+    const {
+        settings: { user },
+        workouts: { editedWorkout }
+    } = getState();
+
+    dao.workouts
+        .delete(user, editedWorkout.id)
+        .then(() => dispatch(deleteWorkout(editedWorkout)));
+};
+
+const sortWorkoutInstances = workoutInstances => [
+    ...Array.from(workoutInstances).sort((a, b) => b.date - a.date)
 ];
-export const fetchWorkoutHistory = workout => dispatch =>
-    fetch('http://localhost:3001/workoutHistory')
-        .then(res => res.json())
-        .then(workoutHistory =>
-            workoutHistory.map(({ date, ...wh }) => ({
-                ...wh,
-                date: new Date(date)
-            }))
-        )
-        .then(sortWorkoutHistory)
-        .then(workoutHistory =>
-            workoutHistory.map(({ date, ...wh }) => ({
-                ...wh,
-                date: date.toISOString()
-            }))
-        )
-        .then(workoutHistory => dispatch(setWorkoutHistory(workoutHistory)));
+export const fetchWorkoutHistory = workout => (dispatch, getState) => {
+    const {
+        settings: { user }
+    } = getState();
+
+    dao.workoutInstances
+        .getAllWhere(user, { workoutId: workout.id })
+        .then(sortWorkoutInstances)
+        .then(workoutInstances => {
+            console.log(workoutInstances);
+            return workoutInstances;
+        })
+        .then(workoutInstances =>
+            dispatch(setWorkoutHistory(workoutInstances))
+        );
+};
 
 export default workoutsSlice.reducer;

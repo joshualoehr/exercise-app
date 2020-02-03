@@ -1,4 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { saveWorkoutInstance } from '../workouts/workoutsSlice';
+import dao from '../../config/dao';
 
 const workoutInstanceSlice = createSlice({
     name: 'workoutInstance',
@@ -67,9 +69,6 @@ const workoutInstanceSlice = createSlice({
         updateRecordedWeight(state, action) {
             state.workoutInstance.recordedWeight = action.payload;
         },
-        saveWorkoutInstance() {
-            console.log('TODO: save workoutInstance to backend');
-        },
         setShowTimer(state, action) {
             state.showTimer = action.payload;
             if (state.showTimer === false && state.intervalID !== null) {
@@ -90,7 +89,7 @@ const workoutInstanceSlice = createSlice({
                 clearInterval(state.intervalID);
             }
         },
-        setintervalID(state, action) {
+        setIntervalID(state, action) {
             state.intervalID = action.payload;
         }
     }
@@ -102,11 +101,10 @@ export const {
     decrementSetInstanceReps,
     saveEditedExercise,
     updateRecordedWeight,
-    saveWorkoutInstance,
     setShowTimer,
     decrementTimeRemaining,
     resetTimer,
-    setintervalID
+    setIntervalID
 } = workoutInstanceSlice.actions;
 
 export const restartTimer = timeRemaining => dispatch => {
@@ -116,7 +114,54 @@ export const restartTimer = timeRemaining => dispatch => {
         dispatch(workoutInstanceSlice.actions.decrementTimeRemaining());
     }, 1000);
 
-    dispatch(setintervalID(intervalID));
+    dispatch(setIntervalID(intervalID));
+};
+
+export const saveWorkoutInstanceAsync = () => (dispatch, getState) => {
+    const {
+        workoutInstance: { workoutInstance },
+        settings: { user }
+    } = getState();
+
+    const {
+        exercises: exerciseInstanceRecords,
+        ...workoutInstanceRecord
+    } = workoutInstance;
+
+    const workoutInstanceOperation = workoutInstanceRecord.id
+        ? dao.workoutInstances.put
+        : dao.workoutInstances.add;
+    const exerciseInstanceOperation = ex =>
+        ex.id
+            ? dao.exerciseInstances.put(user, ex)
+            : dao.exerciseInstances.add(user, ex);
+
+    // Create or update the workoutInstance record
+    workoutInstanceOperation(user, workoutInstanceRecord)
+        // Add workoutInstanceId to each exerciseInstance record
+        .then(savedWorkoutInstance => [
+            exerciseInstanceRecords.map(ex => ({
+                ...ex,
+                workoutInstanceId: savedWorkoutInstance.id
+            })),
+            savedWorkoutInstance
+        ])
+        // Create or update each exerciseInstance record
+        .then(([exerciseInstanceRecords, savedWorkoutInstance]) =>
+            Promise.all(
+                exerciseInstanceRecords.map(exerciseInstanceOperation)
+            ).then(() => savedWorkoutInstance)
+        )
+        // Update the state with the combined object
+        .then(savedWorkoutInstance =>
+            dispatch(
+                saveWorkoutInstance({
+                    ...workoutInstance,
+                    id: savedWorkoutInstance.id
+                })
+            )
+        )
+        .catch(console.error);
 };
 
 export default workoutInstanceSlice.reducer;

@@ -4,6 +4,7 @@ import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
 export const newWorkoutInstance = (workout, userWeight) => ({
+    workoutId: workout.id,
     date: new Date().toISOString(),
     exercises: workout.workoutExercises.map(exercise => ({
         id: exercise.id,
@@ -37,4 +38,34 @@ export const formatTimer = timeRemaining => {
     }
 
     return timeRemainingDisplay;
+};
+
+export const addOrReplace = (list, obj, key = 'id') => {
+    let replaced = false;
+
+    list = list.reduce((acc, el) => {
+        if (el[key] === obj[key]) {
+            el = obj;
+            replaced = true;
+        }
+        return [...acc, el];
+    }, []);
+
+    if (!replaced) {
+        list.push(obj);
+    }
+
+    return list;
+};
+
+export const toQueryParams = criteria => {
+    let queryParams = [];
+
+    Object.entries(criteria).forEach(([key, value]) => {
+        queryParams.push(`${key}=${value}`);
+    });
+
+    queryParams = queryParams.join('&');
+
+    return queryParams !== '' ? `?${queryParams}` : queryParams;
 };
