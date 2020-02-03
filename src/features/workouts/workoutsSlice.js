@@ -10,7 +10,8 @@ const workoutsSlice = createSlice({
         editedWorkout: null,
         editedExercise: null,
         workoutHistory: null,
-        showDeleteDialog: false
+        showDeleteDialog: false,
+        nextTemporaryId: 1
     },
     reducers: {
         setWorkouts(state, action) {
@@ -20,7 +21,22 @@ const workoutsSlice = createSlice({
             state.selectedWorkout = action.payload;
         },
         setEditedWorkout(state, action) {
-            state.editedWorkout = action.payload;
+            const editedWorkout = action.payload;
+            if (editedWorkout === null) {
+                state.editedWorkout = null;
+            } else {
+                state.nextTemporaryId = 1;
+                state.editedWorkout = {
+                    ...editedWorkout,
+                    workoutExercises: editedWorkout.workoutExercises.map(
+                        ex => ({
+                            ...ex,
+                            temporaryId: state.nextTemporaryId++
+                        })
+                    ),
+                    deletedExercises: []
+                };
+            }
         },
         setEditedExercise(state, action) {
             state.editedExercise = action.payload;
@@ -33,8 +49,12 @@ const workoutsSlice = createSlice({
             let { workoutExercises } = state.editedWorkout;
 
             const currentIndex = workoutExercises.findIndex(
-                e => e.id === exercise.id
+                e => e.temporaryId === exercise.temporaryId
             );
+
+            if (newIndex === -1 && exercise.id) {
+                state.editedWorkout.deletedExercises.push(exercise);
+            }
 
             if (currentIndex !== newIndex) {
                 workoutExercises = workoutExercises.reduce((acc, ex, i) => {
@@ -70,6 +90,7 @@ const workoutsSlice = createSlice({
         },
         saveEditedWorkout(state, action) {
             const savedWorkout = action.payload;
+            console.log(savedWorkout);
             state.workouts = addOrReplace(state.workouts, savedWorkout);
 
             if (
@@ -81,21 +102,16 @@ const workoutsSlice = createSlice({
         },
         saveEditedExercise(state) {
             const savedExercise = state.editedExercise;
-            if (!savedExercise.id) {
-                savedExercise.id = Math.floor(Math.random() * 10000);
-                state.editedWorkout.workoutExercises.push(savedExercise);
-            } else {
-                state.editedWorkout.workoutExercises = state.editedWorkout.workoutExercises.reduce(
-                    (acc, exercise) => {
-                        if (exercise.id === savedExercise.id) {
-                            return [...acc, savedExercise];
-                        } else {
-                            return [...acc, exercise];
-                        }
-                    },
-                    []
-                );
+
+            if (!savedExercise.temporaryId) {
+                savedExercise.temporaryId = state.nextTemporaryId++;
             }
+
+            state.editedWorkout.workoutExercises = addOrReplace(
+                state.editedWorkout.workoutExercises,
+                savedExercise,
+                'temporaryId'
+            );
         },
         saveWorkoutInstance(state, action) {
             const savedWorkoutInstance = action.payload;
@@ -130,32 +146,45 @@ export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
 
     const {
         workoutExercises: exerciseRecords,
+        deletedExercises,
         ...workoutRecord
     } = editedWorkout;
 
     const workoutOperation = workoutRecord.id
         ? dao.workouts.put
         : dao.workouts.add;
+
     const exerciseOperation = ex =>
         ex.id ? dao.exercises.put(user, ex) : dao.exercises.add(user, ex);
 
+    const exerciseOperations = savedWorkout =>
+        deletedExercises
+            .map(ex => dao.exercises.delete(user, ex.id))
+            .concat(
+                exerciseRecords.map(ex => {
+                    const copy = { ...ex };
+                    delete copy.temporaryId;
+                    copy.workoutId = savedWorkout.id;
+                    return exerciseOperation(copy);
+                })
+            );
+
     // Create or update the workout record
     workoutOperation(user, workoutRecord)
-        // Add workoutId to each exercise record
-        .then(savedWorkout => [
-            exerciseRecords.map(ex => ({ ...ex, workoutId: savedWorkout.id })),
-            savedWorkout
-        ])
-        // Create or update each exercise record
-        .then(([exerciseRecords, savedWorkout]) =>
-            Promise.all(exerciseRecords.map(exerciseOperation)).then(
-                () => savedWorkout
-            )
+        // Create/update/delete each exercise record
+        .then(savedWorkout =>
+            Promise.all(
+                exerciseOperations(savedWorkout)
+            ).then(workoutExercises => [savedWorkout, workoutExercises])
         )
         // Update the state with the combined object
-        .then(savedWorkout =>
+        .then(([savedWorkout, workoutExercises]) =>
             dispatch(
-                saveEditedWorkout({ ...editedWorkout, id: savedWorkout.id })
+                saveEditedWorkout({
+                    ...editedWorkout,
+                    workoutExercises,
+                    id: savedWorkout.id
+                })
             )
         )
         .catch(console.error);
@@ -179,9 +208,15 @@ export const deleteWorkoutAsync = () => (dispatch, getState) => {
         workouts: { editedWorkout }
     } = getState();
 
-    dao.workouts
-        .delete(user, editedWorkout.id)
-        .then(() => dispatch(deleteWorkout(editedWorkout)));
+    const deleteExercise = ex => dao.exercises.delete(user, ex.id);
+    const deleteExercises = workoutExercises =>
+        workoutExercises.filter(ex => !!ex.id).map(deleteExercise);
+
+    Promise.all(deleteExercises(editedWorkout.workoutExercises)).then(() =>
+        dao.workouts
+            .delete(user, editedWorkout.id)
+            .then(() => dispatch(deleteWorkout(editedWorkout)))
+    );
 };
 
 const sortWorkoutInstances = workoutInstances => [
@@ -195,10 +230,6 @@ export const fetchWorkoutHistory = workout => (dispatch, getState) => {
     dao.workoutInstances
         .getAllWhere(user, { workoutId: workout.id })
         .then(sortWorkoutInstances)
-        .then(workoutInstances => {
-            console.log(workoutInstances);
-            return workoutInstances;
-        })
         .then(workoutInstances =>
             dispatch(setWorkoutHistory(workoutInstances))
         );
