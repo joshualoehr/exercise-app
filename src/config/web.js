@@ -9,18 +9,7 @@ const fetchGet = (url, dbResult) =>
                 : dbResult;
         });
 
-const fetchGetAll = (url, dbResults) => {
-    fetch(url)
-        .then(res => res.json())
-        .then(results => {
-            return results.map(result => {
-                const dbResult = dbResults.find(({ id }) => id === result.id);
-                return result.lastUpdated > dbResult.lastUpdated
-                    ? result
-                    : dbResult;
-            });
-        });
-};
+const fetchGetAll = url => fetch(url).then(res => res.json());
 
 const fetchPost = (url, obj) =>
     fetch(url, {
@@ -44,12 +33,9 @@ const fetchDelete = url =>
 const createOperations = resourceName => ({
     get: id => resource =>
         fetchGet(`http://localhost:3001/${resourceName}/${id}`, resource),
-    getAll: () => resources =>
-        fetchGetAll(`http://localhost:3001/${resourceName}`, resources),
-    getAllWhere: criteria => resources =>
+    getAll: (criteria = {}) =>
         fetchGetAll(
-            `http://localhost:3001/${resourceName}${toQueryParams(criteria)}`,
-            resources
+            `http://localhost:3001/${resourceName}${toQueryParams(criteria)}`
         ),
     add: resource =>
         fetchPost(`http://localhost:3001/${resourceName}`, resource),

@@ -1,5 +1,6 @@
 import db from './db';
 import web from './web';
+import { mergeResources } from './utils';
 
 /* Compose async database and web transactions */
 const composeWrite = (dbTran, webTran, user, obj, primaryKey = 'id') =>
@@ -8,7 +9,7 @@ const composeWrite = (dbTran, webTran, user, obj, primaryKey = 'id') =>
         .then(savedObj => (user ? webTran(savedObj) : savedObj));
 
 const composeRead = (dbTran, webTran, user, id) =>
-    dbTran(id)
+    dbTran
         .then(result => JSON.parse(JSON.stringify(result)))
         .then(result => (user ? webTran(id)(result) : result));
 
@@ -18,26 +19,35 @@ const composeDelete = (dbTran, webTran, user, id) =>
 const createOperations = tableName => ({
     get: (user, id) =>
         composeRead(
-            db[tableName].get.bind(db[tableName]),
+            db[tableName].get.bind(db[tableName])(id),
             web[tableName].get,
             user,
             id
         ),
-    getAll: user =>
-        composeRead(
-            db[tableName].toArray.bind(db[tableName]),
-            web[tableName].getAll,
-            user
-        ),
+    // getAll: user =>
+    //     composeRead(
+    //         db[tableName].toArray.bind(db[tableName])(),
+    //         web[tableName].getAll,
+    //         user
+    //     ),
+    getAll: function(user) {
+        const sync = () => Promise.resolve(user ? this.sync(user) : () => {});
+        return sync().then(() =>
+            db[tableName]
+                .toArray()
+                .then(result => JSON.parse(JSON.stringify(result)))
+        );
+    },
     getAllWhere: (user, criteria) =>
         composeRead(
-            criteria =>
-                Promise.resolve(
-                    db[tableName].where
-                        .bind(db[tableName])(criteria)
-                        .toArray()
-                ),
-            web[tableName].getAllWhere,
+            criteria
+                ? Promise.resolve(
+                      db[tableName].where
+                          .bind(db[tableName])(criteria)
+                          .toArray()
+                  )
+                : db[tableName].toArray.bind(db[tableName])(),
+            web[tableName].getAll,
             user,
             criteria
         ),
@@ -61,17 +71,32 @@ const createOperations = tableName => ({
             web[tableName].delete,
             user,
             id
-        )
+        ),
+    sync: function(user) {
+        return Promise.all([db[tableName].toArray(), web[tableName].getAll()])
+            .then(mergeResources)
+            .then(([fresh, stale]) => {
+                fresh.forEach(({ _src, ...freshResource }) => {
+                    if (_src === 'web') {
+                        db[tableName].put(freshResource);
+                    } else if (_src === 'db') {
+                        web[tableName].put(freshResource);
+                    }
+                });
+            });
+    }
 });
 
 export default {
     exercises: createOperations('exercises'),
     workouts: {
         ...createOperations('workouts'),
-        getAll: user =>
-            db.workouts
-                .with({ exercises: 'exercises' })
-                .then(results =>
+        getAll: function(user) {
+            const sync = () =>
+                Promise.resolve(user ? this.sync(user) : () => {});
+
+            return sync().then(() =>
+                db.workouts.with({ exercises: 'exercises' }).then(results =>
                     results.map(result => ({
                         ...result.serialize(),
                         workoutExercises: result.exercises.map(ex =>
@@ -79,7 +104,8 @@ export default {
                         )
                     }))
                 )
-                .then(result => (user ? web.workouts.getAll()(result) : result))
+            );
+        }
     },
     exerciseInstances: createOperations('exerciseInstances'),
     workoutInstances: {
@@ -102,5 +128,13 @@ export default {
                         : result
                 )
     },
-    users: createOperations('users')
+    users: createOperations('users'),
+    syncAll: function(user) {
+        return Promise.all([
+            this.exercises.sync(user),
+            this.workouts.sync(user),
+            this.exerciseInstances.sync(user),
+            this.workoutInstances.sync(user)
+        ]);
+    }
 };

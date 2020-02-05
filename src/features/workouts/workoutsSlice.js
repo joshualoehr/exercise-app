@@ -90,7 +90,6 @@ const workoutsSlice = createSlice({
         },
         saveEditedWorkout(state, action) {
             const savedWorkout = action.payload;
-            console.log(savedWorkout);
             state.workouts = addOrReplace(state.workouts, savedWorkout);
 
             if (
@@ -190,11 +189,7 @@ export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
         .catch(console.error);
 };
 
-export const fetchWorkouts = () => (dispatch, getState) => {
-    const {
-        settings: { user }
-    } = getState();
-
+export const fetchWorkouts = user => dispatch => {
     dispatch(setWorkouts(null));
     dao.workouts
         .getAll(user)

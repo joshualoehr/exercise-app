@@ -9,7 +9,7 @@ import CloseIcon from '@material-ui/icons/Close';
 
 import SlidingPage from '../common/SlidingPage';
 import {
-    setUser,
+    setUserAsync,
     setShowSignInPage
 } from '../../features/settings/settingsSlice';
 import { fetchUsers } from './usersSlice';
@@ -62,7 +62,7 @@ const SignInContent = () => {
                             key={user.id}
                             onClick={() => {
                                 dispatch(setShowSignInPage(false));
-                                dispatch(setUser(user));
+                                dispatch(setUserAsync(user));
                             }}
                             className={classes.button}
                         >

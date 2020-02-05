@@ -69,3 +69,56 @@ export const toQueryParams = criteria => {
 
     return queryParams !== '' ? `?${queryParams}` : queryParams;
 };
+
+export const mergeResources = ([dbResources, webResources]) => {
+    dbResources.sort((a, b) => a.id - b.id);
+    webResources.sort((a, b) => a.id - b.id);
+
+    console.log(dbResources);
+    console.log(webResources);
+
+    let fresh = [],
+        stale = [];
+
+    let dbIdx = 0,
+        webIdx = 0;
+    while (dbIdx < dbResources.length || webIdx < webResources.length) {
+        let dbResource = dbResources[dbIdx]
+            ? { ...dbResources[dbIdx], _src: 'db' }
+            : null;
+        let webResource = webResources[webIdx]
+            ? { ...webResources[webIdx], _src: 'web' }
+            : null;
+
+        if (!dbResource) {
+            fresh.push(webResource);
+            webIdx++;
+        } else if (!webResource) {
+            fresh.push(dbResource);
+            dbIdx++;
+        } else if (dbResource.id < webResource.id) {
+            fresh.push(dbResource);
+            dbIdx++;
+        } else if (dbResource.id > webResource.id) {
+            fresh.push(webResource);
+            webIdx++;
+        } else {
+            if (dbResource.lastUpdated < webResource.lastUpdated) {
+                fresh.push(webResource);
+                stale.push({ freshResource: webResource, _src: 'db' });
+            } else if (dbResource.lastUpdated > webResource.lastUpdated) {
+                fresh.push(dbResource);
+                stale.push({ freshResource: dbResource, _src: 'web' });
+            } else {
+                fresh.push(dbResource);
+            }
+            dbIdx++;
+            webIdx++;
+        }
+    }
+
+    console.log('fresh', fresh);
+    console.log('stale', stale);
+
+    return [fresh, stale];
+};
