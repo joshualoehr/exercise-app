@@ -1,6 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import dao from '../../config/dao';
 import { addOrReplace } from '../../config/utils';
+import {
+    setShowSyncConfirmation,
+    setOnSyncKeepLocal,
+    setOnSyncKeepRemote
+} from '../settings/settingsSlice';
 
 const workoutsSlice = createSlice({
     name: 'workouts',
@@ -189,11 +194,28 @@ export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
         .catch(console.error);
 };
 
-export const fetchWorkouts = user => dispatch => {
+export const fetchWorkouts = () => dispatch => {
     dispatch(setWorkouts(null));
     dao.workouts
-        .getAll(user)
-        .then(workouts => dispatch(setWorkouts(workouts)))
+        .getAllDeep()
+        .then(([sync, workouts]) => {
+            if (sync) {
+                const { keepLocal, keepRemote } = sync;
+                setOnSyncKeepLocal(() =>
+                    keepLocal().then(workouts =>
+                        dispatch(setWorkouts(workouts))
+                    )
+                );
+                setOnSyncKeepRemote(() =>
+                    keepRemote().then(workouts =>
+                        dispatch(setWorkouts(workouts))
+                    )
+                );
+                dispatch(setShowSyncConfirmation(true));
+            } else {
+                dispatch(setWorkouts(workouts));
+            }
+        })
         .catch(console.error);
 };
 
@@ -223,7 +245,7 @@ export const fetchWorkoutHistory = workout => (dispatch, getState) => {
     } = getState();
 
     dao.workoutInstances
-        .getAllWhere(user, { workoutId: workout.id })
+        .getAll(user, workout.id)
         .then(sortWorkoutInstances)
         .then(workoutInstances =>
             dispatch(setWorkoutHistory(workoutInstances))

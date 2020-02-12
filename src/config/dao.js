@@ -1,140 +1,73 @@
 import db from './db';
 import web from './web';
-import { mergeResources } from './utils';
 
-/* Compose async database and web transactions */
-const composeWrite = (dbTran, webTran, user, obj, primaryKey = 'id') =>
-    dbTran(obj)
-        .then(id => ({ ...obj, [primaryKey]: id }))
-        .then(savedObj => (user ? webTran(savedObj) : savedObj));
+if (!localStorage.getItem('lastUpdated')) {
+    localStorage.setItem('lastUpdated', 0);
+}
+if (!localStorage.getItem('lastSync')) {
+    localStorage.setItem('lastSync', 0);
+}
 
-const composeRead = (dbTran, webTran, user, id) =>
-    dbTran
-        .then(result => JSON.parse(JSON.stringify(result)))
-        .then(result => (user ? webTran(id)(result) : result));
-
-const composeDelete = (dbTran, webTran, user, id) =>
-    dbTran(id).then(() => (user ? webTran(id) : void 0));
-
-const createOperations = tableName => ({
-    get: (user, id) =>
-        composeRead(
-            db[tableName].get.bind(db[tableName])(id),
-            web[tableName].get,
-            user,
-            id
-        ),
-    // getAll: user =>
-    //     composeRead(
-    //         db[tableName].toArray.bind(db[tableName])(),
-    //         web[tableName].getAll,
-    //         user
-    //     ),
-    getAll: function(user) {
-        const sync = () => Promise.resolve(user ? this.sync(user) : () => {});
-        return sync().then(() =>
-            db[tableName]
-                .toArray()
-                .then(result => JSON.parse(JSON.stringify(result)))
-        );
-    },
-    getAllWhere: (user, criteria) =>
-        composeRead(
-            criteria
-                ? Promise.resolve(
-                      db[tableName].where
-                          .bind(db[tableName])(criteria)
-                          .toArray()
-                  )
-                : db[tableName].toArray.bind(db[tableName])(),
-            web[tableName].getAll,
-            user,
-            criteria
-        ),
-    add: (user, workout) =>
-        composeWrite(
-            db[tableName].add.bind(db[tableName]),
-            web[tableName].add,
-            user,
-            workout
-        ),
-    put: (user, workout) =>
-        composeWrite(
-            db[tableName].put.bind(db[tableName]),
-            web[tableName].put,
-            user,
-            workout
-        ),
-    delete: (user, id) =>
-        composeDelete(
-            db[tableName].delete.bind(db[tableName]),
-            web[tableName].delete,
-            user,
-            id
-        ),
-    sync: function(user) {
-        return Promise.all([db[tableName].toArray(), web[tableName].getAll()])
-            .then(mergeResources)
-            .then(([fresh, stale]) => {
-                fresh.forEach(({ _src, ...freshResource }) => {
-                    if (_src === 'web') {
-                        db[tableName].put(freshResource);
-                    } else if (_src === 'db') {
-                        web[tableName].put(freshResource);
-                    }
-                });
-            });
+const synchronized = async dbOperation => {
+    if (!web.online()) {
+        return dbOperation();
     }
-});
+
+    const lastSync = localStorage.getItem('lastSync');
+    const lastRemoteUpdate = await web.getLastUpdated();
+
+    if (lastSync !== lastRemoteUpdate) {
+        // TODO: do the sync
+        return {
+            keepLocal: dbOperation,
+            keepRemote: dbOperation
+        };
+    }
+
+    return dbOperation();
+};
 
 export default {
-    exercises: createOperations('exercises'),
+    exercises: {
+        getAll: workoutId => synchronized(() => db.exercises.getAll(workoutId)),
+        get: (workoutId, id) =>
+            synchronized(() => db.exercises.get(workoutId, id)),
+        add: exercise => synchronized(() => db.exercises.add(exercise)),
+        put: exercise => synchronized(() => db.exercises.put(exercise)),
+        delete: exercise => synchronized(() => db.exercises.delete(exercise))
+    },
+    exerciseInstances: {
+        getAll: workoutInstanceId =>
+            synchronized(() => db.exerciseInstances.getAll(workoutInstanceId)),
+        get: (workoutInstanceId, id) =>
+            synchronized(() => db.exerciseInstances.get(workoutInstanceId, id)),
+        add: exerciseInstance =>
+            synchronized(() => db.exerciseInstances.add(exerciseInstance)),
+        put: exerciseInstance =>
+            synchronized(() => db.exerciseInstances.put(exerciseInstance)),
+        delete: exerciseInstance =>
+            synchronized(() => db.exerciseInstances.delete(exerciseInstance))
+    },
     workouts: {
-        ...createOperations('workouts'),
-        getAll: function(user) {
-            const sync = () =>
-                Promise.resolve(user ? this.sync(user) : () => {});
-
-            return sync().then(() =>
-                db.workouts.with({ exercises: 'exercises' }).then(results =>
-                    results.map(result => ({
-                        ...result.serialize(),
-                        workoutExercises: result.exercises.map(ex =>
-                            ex.serialize()
-                        )
-                    }))
-                )
-            );
-        }
+        getAllDeep: () => synchronized(() => db.workouts.getAllDeep()),
+        getAll: () => synchronized(() => db.workouts.getAll()),
+        get: id => synchronized(() => db.workouts.get(id)),
+        add: workout => synchronized(() => db.workouts.add(workout)),
+        put: workout => synchronized(() => db.workouts.put(workout)),
+        delete: workout => synchronized(() => db.workouts.delete(workout))
     },
-    exerciseInstances: createOperations('exerciseInstances'),
     workoutInstances: {
-        ...createOperations('workoutInstances'),
-        getAllWhere: (user, criteria) =>
-            db.workoutInstances
-                .where(criteria)
-                .with({ exerciseInstances: 'exerciseInstances' })
-                .then(results =>
-                    results.map(result => ({
-                        ...result.serialize(),
-                        exercises: result.exerciseInstances.map(ex =>
-                            ex.serialize()
-                        )
-                    }))
-                )
-                .then(result =>
-                    user
-                        ? web.workoutInstances.getAll(criteria)(result)
-                        : result
-                )
-    },
-    users: createOperations('users'),
-    syncAll: function(user) {
-        return Promise.all([
-            this.exercises.sync(user),
-            this.workouts.sync(user),
-            this.exerciseInstances.sync(user),
-            this.workoutInstances.sync(user)
-        ]);
+        getAllDeep: workoutId =>
+            synchronized(() => db.workoutInstances.getAllDeep(workoutId)),
+        getAll: workoutId =>
+            synchronized(() => db.workoutInstances.getAll(workoutId)),
+        get: (workoutId, id) =>
+            synchronized(() => db.workoutInstances.get(workoutId, id)),
+        add: workoutInstance =>
+            synchronized(() => db.workoutInstances.add(workoutInstance)),
+        put: workoutInstance =>
+            synchronized(() => db.workoutInstances.put(workoutInstance)),
+        delete: workoutInstance =>
+            synchronized(() => db.workoutInstances.delete(workoutInstance))
     }
 };
