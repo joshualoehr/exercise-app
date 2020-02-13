@@ -1,5 +1,3 @@
-icon credit: Icons made by <a href="https://www.flaticon.com/authors/those-icons" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
-
 # starter-kit
 
 This is a small JavaScript development environment starter kit created for my own personal use on my projects. It's intended to be as lightweight as possible, and tailored to my own personal preferences. This kit is also not geared towards production deployment, and should not be used for such.

@@ -16,8 +16,7 @@ const useStyles = makeStyles(theme => ({
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
-        zIndex: -1
+        height: '100%'
     },
     fab: {
         position: 'absolute',

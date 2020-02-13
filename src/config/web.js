@@ -89,7 +89,7 @@ export default {
     logout: function() {
         const token = localStorage.getItem('access_token');
         return fetchPost(token)(`${baseUrl}/logout`).then(() => {
-            localStorage.setItem('access_token', null);
+            localStorage.setItem('access_token', '');
         });
     },
     me: function() {

@@ -4,18 +4,21 @@ import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import SyncProblemIcon from '@material-ui/icons/SyncProblem';
+import WarningIcon from '@material-ui/icons/Warning';
 
 import { TOP_BAR_HEIGHT } from '../../config/constants';
+import ConfirmationDialog from '../common/ConfirmationDialog';
 import SlidingPage from '../common/SlidingPage';
 import {
-    syncKeepLocal,
-    syncKeepRemote,
-    syncCancel
+    confirmSync,
+    promptForConfirmation,
+    syncCancel,
+    setShowSyncConfirmationDialog
 } from '../../features/settings/settingsSlice';
 
 const useStyles = makeStyles(theme => ({
     syncIcon: {
-        marginTop: theme.spacing(4),
         fill: theme.palette.primary.main,
         width: '10rem',
         height: '10rem'
@@ -43,6 +46,13 @@ const useStyles = makeStyles(theme => ({
         '&:first-child': {
             marginTop: 0
         }
+    },
+    warning: {
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: theme.spacing(1)
     }
 }));
 
@@ -50,22 +60,16 @@ const SyncConfirmationContent = () => {
     const classes = useStyles();
     const dispatch = useDispatch();
 
+    const confirmationDialogType = useSelector(
+        state => state.settings.confirmationDialogType
+    );
+    const showSyncConfirmationDialog = useSelector(
+        state => state.settings.showSyncConfirmationDialog
+    );
+
     return (
         <Container className={classes.innerContainer}>
-            <svg
-                className={classes.syncIcon}
-                id="Capa_1"
-                enableBackground="new 0 0 551.13 551.13"
-                height="512"
-                viewBox="0 0 551.13 551.13"
-                width="512"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <path d="m258.342 378.902h34.448v34.446h-34.448z" />
-                <path d="m258.342 137.782h34.446v206.674h-34.446z" />
-                <path d="m68.891 275.565c0-102.134 74.738-186.382 172.228-202.94v30.712l68.891-51.668-68.89-51.669v37.235c-116.654 16.805-206.674 117.119-206.674 238.33 0 87.119 46.608 163.375 116.048 205.749l29.947-22.46c-66.186-34.49-111.549-103.631-111.55-183.289z" />
-                <path d="m400.637 69.816-29.947 22.46c66.186 34.49 111.549 103.631 111.549 183.289 0 102.162-74.7 186.655-172.228 203.175v-30.949l-68.891 51.668 68.891 51.671v-37.26c116.645-16.807 206.674-117.095 206.674-238.304 0-87.12-46.609-163.376-116.048-205.75z" />
-            </svg>
+            <SyncProblemIcon className={classes.syncIcon} />
             <Typography className={classes.text}>
                 The data on this device is out of sync with your online data.
                 <br />
@@ -76,7 +80,7 @@ const SyncConfirmationContent = () => {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                    dispatch(syncKeepLocal());
+                    dispatch(promptForConfirmation('keepLocal'));
                 }}
                 className={classes.button}
             >
@@ -86,7 +90,7 @@ const SyncConfirmationContent = () => {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                    dispatch(syncKeepRemote());
+                    dispatch(promptForConfirmation('keepRemote'));
                 }}
                 className={classes.button}
             >
@@ -101,6 +105,27 @@ const SyncConfirmationContent = () => {
             >
                 Cancel and Sign out
             </Button>
+            <ConfirmationDialog
+                open={showSyncConfirmationDialog}
+                onConfirm={() => dispatch(confirmSync())}
+                onCancel={() => dispatch(setShowSyncConfirmationDialog(false))}
+                confirmColor={'secondary'}
+                confirmText={'Continue'}
+            >
+                <>
+                    <div className={classes.warning}>
+                        <WarningIcon color="secondary" />
+                        <Typography variant="h6" color="secondary">
+                            WARNING
+                        </Typography>
+                    </div>
+                    <Typography>
+                        {confirmationDialogType === 'keepLocal'
+                            ? 'This will overwrite your online data.'
+                            : 'You will lose any unsaved changes on this device.'}
+                    </Typography>
+                </>
+            </ConfirmationDialog>
         </Container>
     );
 };

@@ -5,9 +5,11 @@ import web from '../../config/web';
 const settingsSlice = createSlice({
     name: 'settings',
     initialState: {
+        confirmationDialogType: null,
         showAppSettings: null,
         showSignInPage: false,
         showSyncConfirmation: false,
+        showSyncConfirmationDialog: false,
         showSyncError: false,
         syncing: false,
         user: null
@@ -22,6 +24,12 @@ const settingsSlice = createSlice({
         setShowSyncConfirmation(state, action) {
             state.showSyncConfirmation = action.payload;
         },
+        setShowSyncConfirmationDialog(state, action) {
+            state.showSyncConfirmationDialog = action.payload;
+        },
+        setConfirmationDialogType(state, action) {
+            state.confirmationDialogType = action.payload;
+        },
         setShowSyncError(state, action) {
             state.showSyncError = action.payload;
         },
@@ -34,6 +42,17 @@ const settingsSlice = createSlice({
     }
 });
 
+export const {
+    setShowAppSettings,
+    setShowSignInPage,
+    setShowSyncConfirmation,
+    setShowSyncConfirmationDialog,
+    setConfirmationDialogType,
+    setShowSyncError,
+    setSyncing,
+    setUser
+} = settingsSlice.actions;
+
 let onSyncKeepLocal = null;
 let onSyncKeepRemote = null;
 let onSyncCancel = null;
@@ -41,14 +60,25 @@ let onSyncCancel = null;
 export const setOnSyncKeepLocal = func => (onSyncKeepLocal = func);
 export const setOnSyncKeepRemote = func => (onSyncKeepRemote = func);
 export const setOnSyncCancel = func => (onSyncCancel = func);
-export const {
-    setShowAppSettings,
-    setShowSignInPage,
-    setShowSyncConfirmation,
-    setShowSyncError,
-    setSyncing,
-    setUser
-} = settingsSlice.actions;
+
+export const confirmSync = () => (dispatch, getState) => {
+    const {
+        settings: { confirmationDialogType }
+    } = getState();
+
+    dispatch(setShowSyncConfirmationDialog(false));
+
+    if (confirmationDialogType === 'keepLocal') {
+        dispatch(syncKeepLocal());
+    } else {
+        dispatch(syncKeepRemote());
+    }
+};
+
+export const promptForConfirmation = type => dispatch => {
+    dispatch(setConfirmationDialogType(type));
+    dispatch(setShowSyncConfirmationDialog(true));
+};
 
 export const setUserAsync = user => dispatch => {
     web.login('johnsmith@gmail.com', 'Abc123!')

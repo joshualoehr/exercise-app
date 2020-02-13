@@ -26,7 +26,7 @@ const synchronized = async dbOperation => {
             {
                 keepLocal: dbOperation,
                 keepRemote: dbOperation,
-                cancel: dbOperation
+                cancel: () => web.logout().then(dbOperation)
             },
             null
         ];

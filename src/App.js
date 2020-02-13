@@ -18,17 +18,17 @@ const App = () => {
     return (
         <DndProvider backend={Backend} options={{ enableMouseEvents: true }}>
             <ThemeProvider theme={Theme}>
+                <AppSettings />
                 <Frame>
                     <>
-                        <AppSettings />
-                        <SignIn />
-                        <SyncConfirmation />
                         <WorkoutsList />
                         <WorkoutPage />
                         <WorkoutEdit />
                         <WorkoutInstance />
                     </>
                 </Frame>
+                <SignIn />
+                <SyncConfirmation />
             </ThemeProvider>
         </DndProvider>
     );
