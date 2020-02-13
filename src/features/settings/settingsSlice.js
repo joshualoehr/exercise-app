@@ -1,10 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { fetchWorkouts } from '../workouts/workoutsSlice';
-import dao from '../../config/dao';
 import web from '../../config/web';
-
-let onSyncKeepLocal = null;
-let onSyncKeepRemote = null;
 
 const settingsSlice = createSlice({
     name: 'settings',
@@ -38,30 +34,37 @@ const settingsSlice = createSlice({
     }
 });
 
+let onSyncKeepLocal = null;
+let onSyncKeepRemote = null;
+let onSyncCancel = null;
+
 export const setOnSyncKeepLocal = func => (onSyncKeepLocal = func);
 export const setOnSyncKeepRemote = func => (onSyncKeepRemote = func);
-
+export const setOnSyncCancel = func => (onSyncCancel = func);
 export const {
     setShowAppSettings,
     setShowSignInPage,
     setShowSyncConfirmation,
+    setShowSyncError,
+    setSyncing,
     setUser
 } = settingsSlice.actions;
 
 export const setUserAsync = user => dispatch => {
     web.login('johnsmith@gmail.com', 'Abc123!')
-        .then(() => {
-            console.log('Successfully logged in');
+        .then(web.me)
+        .then(({ user }) => {
+            console.log('Successfully logged in', user);
             dispatch(setUser(user));
             dispatch(fetchWorkouts(user));
         })
         .catch(console.error);
 };
 
-const handleSyncConfirmation = syncHandler => () => dispatch => {
+export const syncKeepLocal = () => dispatch => {
     dispatch(setSyncing(true));
     dispatch(setShowSyncError(false));
-    syncHandler()
+    onSyncKeepLocal()
         .then(() => {
             dispatch(setShowSyncConfirmation(false));
             dispatch(setSyncing(false));
@@ -72,8 +75,33 @@ const handleSyncConfirmation = syncHandler => () => dispatch => {
             throw err;
         });
 };
-
-export const syncKeepLocal = handleSyncConfirmation(onSyncKeepLocal);
-export const syncKeepRemote = handleSyncConfirmation(onSyncKeepRemote);
+export const syncKeepRemote = () => dispatch => {
+    dispatch(setSyncing(true));
+    dispatch(setShowSyncError(false));
+    onSyncKeepRemote()
+        .then(() => {
+            dispatch(setShowSyncConfirmation(false));
+            dispatch(setSyncing(false));
+        })
+        .catch(err => {
+            console.error(err);
+            dispatch(setShowSyncError(true));
+            throw err;
+        });
+};
+export const syncCancel = () => dispatch => {
+    dispatch(setSyncing(true));
+    dispatch(setShowSyncError(false));
+    onSyncCancel()
+        .then(() => {
+            dispatch(setShowSyncConfirmation(false));
+            dispatch(setSyncing(false));
+        })
+        .catch(err => {
+            console.error(err);
+            dispatch(setShowSyncError(true));
+            throw err;
+        });
+};
 
 export default settingsSlice.reducer;

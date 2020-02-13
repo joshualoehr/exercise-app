@@ -11,6 +11,7 @@ import WorkoutPage from './features/workouts/WorkoutPage';
 import WorkoutInstance from './features/workoutInstance/WorkoutInstance';
 import Frame from './features/common/Frame';
 import SignIn from './features/user/SignIn';
+import SyncConfirmation from './features/settings/SyncConfirmation';
 import './App.css';
 
 const App = () => {
@@ -21,6 +22,7 @@ const App = () => {
                     <>
                         <AppSettings />
                         <SignIn />
+                        <SyncConfirmation />
                         <WorkoutsList />
                         <WorkoutPage />
                         <WorkoutEdit />

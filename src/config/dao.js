@@ -10,21 +10,29 @@ if (!localStorage.getItem('lastSync')) {
 
 const synchronized = async dbOperation => {
     if (!web.online()) {
-        return dbOperation();
+        return [null, await dbOperation()];
     }
 
     const lastSync = localStorage.getItem('lastSync');
     const lastRemoteUpdate = await web.getLastUpdated();
 
-    if (lastSync !== lastRemoteUpdate) {
-        // TODO: do the sync
-        return {
-            keepLocal: dbOperation,
-            keepRemote: dbOperation
-        };
+    if (lastRemoteUpdate === null) {
+        return [null, await dbOperation()];
     }
 
-    return dbOperation();
+    if (lastSync !== lastRemoteUpdate) {
+        // TODO: do the sync
+        return [
+            {
+                keepLocal: dbOperation,
+                keepRemote: dbOperation,
+                cancel: dbOperation
+            },
+            null
+        ];
+    }
+
+    return [null, await dbOperation()];
 };
 
 export default {

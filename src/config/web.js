@@ -4,6 +4,9 @@ const baseUrl = 'http://localhost:5000';
 
 const handleWebResponse = ({ success, message, debugMessage, ...resource }) => {
     if (!success) {
+        if (message.startsWith('Invalid JWT')) {
+            localStorage.setItem('access_token', '');
+        }
         throw { message, debugMessage };
     }
     return resource;

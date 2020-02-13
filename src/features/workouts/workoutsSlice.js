@@ -4,7 +4,8 @@ import { addOrReplace } from '../../config/utils';
 import {
     setShowSyncConfirmation,
     setOnSyncKeepLocal,
-    setOnSyncKeepRemote
+    setOnSyncKeepRemote,
+    setOnSyncCancel
 } from '../settings/settingsSlice';
 
 const workoutsSlice = createSlice({
@@ -200,7 +201,7 @@ export const fetchWorkouts = () => dispatch => {
         .getAllDeep()
         .then(([sync, workouts]) => {
             if (sync) {
-                const { keepLocal, keepRemote } = sync;
+                const { keepLocal, keepRemote, cancel } = sync;
                 setOnSyncKeepLocal(() =>
                     keepLocal().then(workouts =>
                         dispatch(setWorkouts(workouts))
@@ -210,6 +211,9 @@ export const fetchWorkouts = () => dispatch => {
                     keepRemote().then(workouts =>
                         dispatch(setWorkouts(workouts))
                     )
+                );
+                setOnSyncCancel(() =>
+                    cancel().then(workouts => dispatch(setWorkouts(workouts)))
                 );
                 dispatch(setShowSyncConfirmation(true));
             } else {
@@ -236,16 +240,12 @@ export const deleteWorkoutAsync = () => (dispatch, getState) => {
     );
 };
 
-const sortWorkoutInstances = workoutInstances => [
+const sortWorkoutInstances = ([_, workoutInstances]) => [
     ...Array.from(workoutInstances).sort((a, b) => b.date - a.date)
 ];
-export const fetchWorkoutHistory = workout => (dispatch, getState) => {
-    const {
-        settings: { user }
-    } = getState();
-
+export const fetchWorkoutHistory = workout => dispatch => {
     dao.workoutInstances
-        .getAll(user, workout.id)
+        .getAll(workout.id)
         .then(sortWorkoutInstances)
         .then(workoutInstances =>
             dispatch(setWorkoutHistory(workoutInstances))

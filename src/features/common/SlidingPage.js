@@ -54,13 +54,19 @@ const SlidingPage = ({
                 <div style={{ height: TOP_BAR_HEIGHT_PX }}></div>
                 <AppBar position="static" className={classes.appBar}>
                     <Toolbar className={classes.toolbar}>
-                        <IconButton onClick={hide}>
-                            {BackIcon ? (
-                                <BackIcon className={classes.backIcon} />
-                            ) : (
-                                <ArrowBackIcon className={classes.backIcon} />
-                            )}
-                        </IconButton>
+                        {hide ? (
+                            <IconButton onClick={hide}>
+                                {BackIcon ? (
+                                    <BackIcon className={classes.backIcon} />
+                                ) : (
+                                    <ArrowBackIcon
+                                        className={classes.backIcon}
+                                    />
+                                )}
+                            </IconButton>
+                        ) : (
+                            <div style={{ width: '48px' }}></div>
+                        )}
                         {Title && <Title />}
                         {RightSide ? (
                             <RightSide />
