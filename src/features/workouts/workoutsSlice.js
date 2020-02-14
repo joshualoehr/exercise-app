@@ -240,8 +240,8 @@ export const deleteWorkoutAsync = () => (dispatch, getState) => {
     );
 };
 
-const sortWorkoutInstances = ([_, workoutInstances]) => [
-    ...Array.from(workoutInstances).sort((a, b) => b.date - a.date)
+const sortWorkoutInstances = res => [
+    ...Array.from(res.workoutInstances).sort((a, b) => b.date - a.date)
 ];
 export const fetchWorkoutHistory = workout => dispatch => {
     dao.workoutInstances
