@@ -8,6 +8,7 @@ const usersSlice = createSlice({
     initialState: {
         loginError: null,
         loggingIn: false,
+        showRegistration: false,
         users: null
     },
     reducers: {
@@ -17,13 +18,21 @@ const usersSlice = createSlice({
         setLoggingIn(state, action) {
             state.loggingIn = action.payload;
         },
+        setShowRegistration(state, action) {
+            state.showRegistration = action.payload;
+        },
         setUsers(state, action) {
             state.users = action.payload;
         }
     }
 });
 
-export const { setLoginError, setLoggingIn, setUsers } = usersSlice.actions;
+export const {
+    setLoginError,
+    setLoggingIn,
+    setShowRegistration,
+    setUsers
+} = usersSlice.actions;
 
 export const fetchUsers = () => dispatch =>
     fetch('http://localhost:3001/users')
@@ -40,7 +49,21 @@ export const login = (email, password) => dispatch => {
             dispatch(setLoggingIn(false));
         })
         .catch(err => {
-            console.error(err);
+            dispatch(setLoginError(err.message));
+            dispatch(setLoggingIn(false));
+        });
+};
+
+export const register = (email, password) => dispatch => {
+    dispatch(setLoggingIn(true));
+    dispatch(setLoginError(false));
+    web.register(email, password)
+        .then(user => {
+            dispatch(setUser(user));
+            dispatch(setShowSignInPage(false));
+            dispatch(setLoggingIn(false));
+        })
+        .catch(err => {
             dispatch(setLoginError(err.message));
             dispatch(setLoggingIn(false));
         });

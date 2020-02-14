@@ -115,7 +115,6 @@ export const syncCancel = () => dispatch => {
             dispatch(setUser(null));
         })
         .catch(err => {
-            console.error(err);
             dispatch(setShowSyncError(true));
             throw err;
         });

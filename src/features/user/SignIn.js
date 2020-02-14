@@ -11,7 +11,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import SlidingPage from '../common/SlidingPage';
 import { setShowSignInPage } from '../../features/settings/settingsSlice';
-import { login } from './usersSlice';
+import {
+    login,
+    register,
+    setLoginError,
+    setShowRegistration
+} from './usersSlice';
 
 const EMAIL_REGEX = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
 
@@ -63,6 +68,8 @@ const SignInContent = () => {
 
     const loginError = useSelector(state => state.users.loginError);
     const loggingIn = useSelector(state => state.users.loggingIn);
+    const showRegistration = useSelector(state => state.users.showRegistration);
+
     const [email, setEmail] = useState({
         value: '',
         dirty: false,
@@ -74,11 +81,55 @@ const SignInContent = () => {
         dirty: false,
         error: false
     });
+    const [confirmPassword, setConfirmPassword] = useState({
+        value: '',
+        dirty: false,
+        error: false
+    });
+
+    const setPasswords = (newPassword, newConfirmPassword) => {
+        setPassword(newPassword);
+        setConfirmPassword(newConfirmPassword);
+    };
+
+    const checkPasswords = (newValue, password, otherPassword) =>
+        new Promise(resolve => {
+            if (!showRegistration) {
+                resolve([
+                    {
+                        value: newValue,
+                        dirty: true,
+                        error: password.dirty && !newValue
+                    },
+                    otherPassword
+                ]);
+                return;
+            }
+
+            let passwordMismatch = false;
+            if (password.dirty && otherPassword.dirty) {
+                passwordMismatch = newValue !== otherPassword.value;
+            }
+
+            resolve([
+                {
+                    value: newValue,
+                    dirty: password.dirty || newValue,
+                    error: !newValue || passwordMismatch,
+                    helperText: passwordMismatch ? 'Passwords must match' : null
+                },
+                {
+                    ...otherPassword,
+                    error: !otherPassword.value || passwordMismatch,
+                    helperText: passwordMismatch ? 'Passwords must match' : null
+                }
+            ]);
+        });
 
     return (
         <Container className={classes.container}>
             <Typography variant="h4" className={classes.header}>
-                Sign In
+                {showRegistration ? 'Register' : 'Sign In'}
             </Typography>
             {loginError && (
                 <Typography variant="subtitle1" color="secondary">
@@ -128,6 +179,7 @@ const SignInContent = () => {
                 type="password"
                 value={password.value}
                 error={password.dirty && password.error}
+                helperText={password.helperText}
                 onFocus={() =>
                     setPassword({
                         ...password,
@@ -135,10 +187,13 @@ const SignInContent = () => {
                     })
                 }
                 onBlur={e =>
-                    setPassword({
-                        ...password,
-                        error: !e.target.value
-                    })
+                    checkPasswords(
+                        e.target.value,
+                        password,
+                        confirmPassword
+                    ).then(([newPassword, newConfirmPassword]) =>
+                        setPasswords(newPassword, newConfirmPassword)
+                    )
                 }
                 onChange={e =>
                     setPassword({
@@ -148,6 +203,41 @@ const SignInContent = () => {
                     })
                 }
             ></TextField>
+            {showRegistration && (
+                <TextField
+                    id="confirmPassword"
+                    className={classes.textInput}
+                    label="Confirm Password"
+                    variant="outlined"
+                    type="password"
+                    value={confirmPassword.value}
+                    error={confirmPassword.dirty && confirmPassword.error}
+                    helperText={confirmPassword.helperText}
+                    onFocus={() =>
+                        setConfirmPassword({
+                            ...confirmPassword,
+                            error: false,
+                            helperText: null
+                        })
+                    }
+                    onBlur={e =>
+                        checkPasswords(
+                            e.target.value,
+                            confirmPassword,
+                            password
+                        ).then(([newConfirmPassword, newPassword]) =>
+                            setPasswords(newPassword, newConfirmPassword)
+                        )
+                    }
+                    onChange={e =>
+                        setConfirmPassword({
+                            value: e.target.value,
+                            dirty: true,
+                            error: false
+                        })
+                    }
+                ></TextField>
+            )}
             <Button
                 color="primary"
                 variant="contained"
@@ -164,6 +254,10 @@ const SignInContent = () => {
                             dirty: true,
                             error: !password.value
                         });
+                    } else if (showRegistration) {
+                        if (password.value === confirmPassword.value) {
+                            dispatch(register(email.value, password.value));
+                        }
                     } else {
                         dispatch(login(email.value, password.value));
                     }
@@ -184,7 +278,15 @@ const SignInContent = () => {
                 )}
             </Button>
             <div className={classes.linkContainer}>
-                <Link className={classes.link}>Register</Link>
+                <Link
+                    className={classes.link}
+                    onClick={() => {
+                        dispatch(setLoginError(null));
+                        dispatch(setShowRegistration(!showRegistration));
+                    }}
+                >
+                    {showRegistration ? 'Sign In' : 'Register'}
+                </Link>
                 <Link className={classes.link}>Use a Demo User</Link>
             </div>
         </Container>

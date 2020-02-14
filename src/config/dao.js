@@ -20,7 +20,7 @@ const synchronized = async dbOperation => {
         return [null, await dbOperation()];
     }
 
-    if (lastSync !== lastRemoteUpdate) {
+    if (lastSync > 0 && lastSync !== lastRemoteUpdate) {
         // TODO: do the sync
         return [
             {
