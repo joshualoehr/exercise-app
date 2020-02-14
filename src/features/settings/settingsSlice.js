@@ -1,6 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchWorkouts } from '../workouts/workoutsSlice';
-import web from '../../config/web';
 
 const settingsSlice = createSlice({
     name: 'settings',
@@ -80,17 +78,6 @@ export const promptForConfirmation = type => dispatch => {
     dispatch(setShowSyncConfirmationDialog(true));
 };
 
-export const setUserAsync = user => dispatch => {
-    web.login('johnsmith@gmail.com', 'Abc123!')
-        .then(web.me)
-        .then(({ user }) => {
-            console.log('Successfully logged in', user);
-            dispatch(setUser(user));
-            dispatch(fetchWorkouts(user));
-        })
-        .catch(console.error);
-};
-
 export const syncKeepLocal = () => dispatch => {
     dispatch(setSyncing(true));
     dispatch(setShowSyncError(false));
@@ -120,12 +107,12 @@ export const syncKeepRemote = () => dispatch => {
         });
 };
 export const syncCancel = () => dispatch => {
-    dispatch(setSyncing(true));
     dispatch(setShowSyncError(false));
     onSyncCancel()
         .then(() => {
             dispatch(setShowSyncConfirmation(false));
             dispatch(setSyncing(false));
+            dispatch(setUser(null));
         })
         .catch(err => {
             console.error(err);

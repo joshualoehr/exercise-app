@@ -68,23 +68,27 @@ const fetchDelete = token => url => {
 export default {
     online: () => !!localStorage.getItem('access_token'),
     login: function(email, password) {
-        const token = localStorage.getItem('access_token');
-        return fetchPost(token)(`${baseUrl}/login`, {
+        return fetchPost()(`${baseUrl}/login`, {
             email,
             password
-        }).then(({ auth_token }) => {
-            localStorage.setItem('access_token', auth_token);
-        });
+        })
+            .then(({ auth_token }) => {
+                localStorage.setItem('access_token', auth_token);
+                return auth_token;
+            })
+            .then(token => fetchGet(token)(`${baseUrl}/users/me`));
     },
-    register: function(email, password, displayName) {
+    register: function(email, password) {
         const token = localStorage.getItem('access_token');
         return fetchPost(token)(`${baseUrl}/register`, {
             email,
-            password,
-            displayName
-        }).then(({ auth_token }) => {
-            localStorage.setItem('access_token', auth_token);
-        });
+            password
+        })
+            .then(({ auth_token }) => {
+                localStorage.setItem('access_token', auth_token);
+                return auth_token;
+            })
+            .then(token => fetchGet(token)(`${baseUrl}/users/me`));
     },
     logout: function() {
         const token = localStorage.getItem('access_token');

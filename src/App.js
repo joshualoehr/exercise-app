@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { DndProvider } from 'react-dnd';
 import Backend from 'react-dnd-touch-backend';
@@ -12,9 +13,20 @@ import WorkoutInstance from './features/workoutInstance/WorkoutInstance';
 import Frame from './features/common/Frame';
 import SignIn from './features/user/SignIn';
 import SyncConfirmation from './features/settings/SyncConfirmation';
+import web from './config/web';
+import { setUser } from './features/settings/settingsSlice';
 import './App.css';
 
 const App = () => {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            web.me().then(user => dispatch(setUser(user)));
+        }
+    }, []);
+
     return (
         <DndProvider backend={Backend} options={{ enableMouseEvents: true }}>
             <ThemeProvider theme={Theme}>

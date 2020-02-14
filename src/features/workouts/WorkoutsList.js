@@ -37,10 +37,11 @@ const WorkoutsList = () => {
     const dispatch = useDispatch();
 
     const workouts = useSelector(state => state.workouts.workouts);
+    const user = useSelector(state => state.settings.user);
 
     useEffect(() => {
         dispatch(fetchWorkouts());
-    }, [dispatch]);
+    }, [dispatch, user]);
 
     return (
         <Container

@@ -11,10 +11,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
+import web from '../../config/web';
 import {
     setShowAppSettings,
     setShowSignInPage,
-    setUser
+    setUser,
+    syncCancel
 } from './settingsSlice';
 
 const useStyles = makeStyles(theme => ({
@@ -68,7 +70,7 @@ const OnlineStatus = () => {
     return (
         <div className={classes.onlineStatusContainer}>
             <Typography className={classes.onlineStatusText}>
-                {user ? user.displayName : 'Offline'}
+                {user ? 'Online' : 'Offline'}
             </Typography>
             <div
                 className={`${classes.onlineStatus} ${
@@ -82,7 +84,11 @@ const OnlineStatus = () => {
 const AppSettingsContent = () => {
     const classes = useStyles();
     const dispatch = useDispatch();
+
     const user = useSelector(state => state.settings.user);
+    const showSyncConfirmation = useSelector(
+        state => state.settings.showSyncConfirmation
+    );
 
     return (
         <div className={classes.list} role="presentation">
@@ -93,7 +99,13 @@ const AppSettingsContent = () => {
                     className={classes.listItem}
                     onClick={() => {
                         if (user) {
-                            dispatch(setUser(null));
+                            web.logout().then(() => {
+                                if (showSyncConfirmation) {
+                                    dispatch(syncCancel());
+                                } else {
+                                    dispatch(setUser(null));
+                                }
+                            });
                         } else {
                             dispatch(setShowSignInPage(true));
                         }
