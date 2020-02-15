@@ -34,7 +34,6 @@ export const Exercise = db.exercises.defineClass({
     numSets: Number,
     numReps: Number,
     weight: Number,
-    archived: Boolean,
     lastUpdated: Number
 });
 Exercise.prototype.serialize = function() {
@@ -44,7 +43,6 @@ Exercise.prototype.serialize = function() {
 export const Workout = db.workouts.defineClass({
     id: Number,
     workoutName: String,
-    archived: Boolean,
     lastUpdated: Number
 });
 Workout.prototype.serialize = function() {
@@ -62,7 +60,6 @@ export const ExerciseInstance = db.exerciseInstances.defineClass({
             completedReps: Number
         }
     ],
-    archived: Boolean,
     lastUpdated: Number
 });
 ExerciseInstance.prototype.serialize = function() {
@@ -73,7 +70,7 @@ export const WorkoutInstance = db.workoutInstances.defineClass({
     id: Number,
     workoutId: Number,
     date: String,
-    archived: Boolean,
+    recordedWeight: Number,
     lastUpdated: Number
 });
 WorkoutInstance.prototype.serialize = function() {
@@ -83,7 +80,6 @@ WorkoutInstance.prototype.serialize = function() {
 export const User = db.users.defineClass({
     id: Number,
     displayName: String,
-    archived: Boolean,
     lastUpdated: Number
 });
 User.prototype.serialize = function() {
@@ -242,12 +238,12 @@ export default {
             workouts,
             workoutInstances
         }) {
-            exerciseIds = exercises.map(exercise => exercise.id);
-            exerciseInstanceIds = exerciseInstances.map(
+            const exerciseIds = exercises.map(exercise => exercise.id);
+            const exerciseInstanceIds = exerciseInstances.map(
                 exerciseInstance => exerciseInstance.id
             );
-            workoutIds = workouts.map(workout => workout.id);
-            workoutInstanceIds = workoutInstances.map(
+            const workoutIds = workouts.map(workout => workout.id);
+            const workoutInstanceIds = workoutInstances.map(
                 workoutInstance => workoutInstance.id
             );
 
@@ -267,7 +263,7 @@ export default {
                 )
                 .then(() => {
                     localStorage.setItem('lastUpdated', lastUpdated);
-                    localStorage.setItem('lastSync', lastUpdate);
+                    localStorage.setItem('lastSync', lastUpdated);
                 });
         }
     }

@@ -91,10 +91,10 @@ export default {
             localStorage.setItem('access_token', '');
         });
     },
-    me: function() {
+    me() {
         const token = localStorage.getItem('access_token');
-        return fetchGet(token)(`${baseUrl}/users/me`).then(user => {
-            const lastUpdate = localStorage.getItem('lastUpdate');
+        return fetchGet(token)(`${baseUrl}/users/me`).then(({ user }) => {
+            const lastUpdate = parseInt(localStorage.getItem('lastUpdated'));
             const lastRemoteUpdate = new Date(user.last_updated).getTime();
 
             if (lastUpdate !== lastRemoteUpdate) {
@@ -255,7 +255,10 @@ export default {
     sync: {
         getAll: function() {
             const token = localStorage.getItem('access_token');
-            return fetchGet(token)(`${baseUrl}/sync`).then(({ sync }) => sync);
+            return fetchGet(token)(`${baseUrl}/sync`).then(({ sync }) => ({
+                ...sync,
+                lastUpdated: new Date(sync.lastUpdated).getTime()
+            }));
         },
         updateAll: function(data) {
             const token = localStorage.getItem('access_token');
