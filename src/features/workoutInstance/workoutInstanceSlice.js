@@ -10,11 +10,24 @@ const workoutInstanceSlice = createSlice({
         showWeightOverrideDialog: false,
         showTimer: false,
         timeRemaining: 0,
-        intervalID: null
+        intervalID: null,
+        nextTemporaryId: 1
     },
     reducers: {
         setWorkoutInstance(state, action) {
-            state.workoutInstance = action.payload;
+            let workoutInstance = action.payload;
+
+            if (workoutInstance) {
+                workoutInstance = {
+                    ...workoutInstance,
+                    exercises: workoutInstance.exercises.map((ex, i) => ({
+                        ...ex,
+                        temporaryId: i
+                    }))
+                };
+            }
+
+            state.workoutInstance = workoutInstance;
         },
         setEditedExercise(state, action) {
             state.editedExercise = action.payload;
@@ -27,7 +40,7 @@ const workoutInstanceSlice = createSlice({
             let hideTimer = false;
             state.workoutInstance.exercises = state.workoutInstance.exercises.reduce(
                 (acc, ex) => {
-                    if (ex.id === exercise.id) {
+                    if (ex.temporaryId === exercise.temporaryId) {
                         let completedReps = ex.sets[index].completedReps;
                         switch (completedReps) {
                             case null:
@@ -59,7 +72,7 @@ const workoutInstanceSlice = createSlice({
             state.workoutInstance.exercises = state.workoutInstance.exercises.reduce(
                 (acc, ex) => [
                     ...acc,
-                    ex.id === state.editedExercise.id
+                    ex.temporaryId === state.editedExercise.temporaryId
                         ? state.editedExercise
                         : ex
                 ],
@@ -119,8 +132,7 @@ export const restartTimer = timeRemaining => dispatch => {
 
 export const saveWorkoutInstanceAsync = () => (dispatch, getState) => {
     const {
-        workoutInstance: { workoutInstance },
-        settings: { user }
+        workoutInstance: { workoutInstance }
     } = getState();
 
     const {
@@ -131,36 +143,30 @@ export const saveWorkoutInstanceAsync = () => (dispatch, getState) => {
     const workoutInstanceOperation = workoutInstanceRecord.id
         ? dao.workoutInstances.put
         : dao.workoutInstances.add;
+
     const exerciseInstanceOperation = ex =>
-        ex.id
-            ? dao.exerciseInstances.put(user, ex)
-            : dao.exerciseInstances.add(user, ex);
+        ex.id ? dao.exerciseInstances.put(ex) : dao.exerciseInstances.add(ex);
+
+    const exerciseInstanceOperations = savedWorkoutInstance =>
+        exerciseInstanceRecords.map(ex => {
+            const copy = { ...ex };
+            delete copy.temporaryId;
+            copy.workoutInstanceId = savedWorkoutInstance.id;
+            return exerciseInstanceOperation(copy);
+        });
 
     // Create or update the workoutInstance record
-    workoutInstanceOperation(user, workoutInstanceRecord)
-        // Add workoutInstanceId to each exerciseInstance record
-        .then(savedWorkoutInstance => [
-            exerciseInstanceRecords.map(ex => ({
-                ...ex,
-                workoutInstanceId: savedWorkoutInstance.id
-            })),
-            savedWorkoutInstance
-        ])
+    workoutInstanceOperation(workoutInstanceRecord)
         // Create or update each exerciseInstance record
-        .then(([exerciseInstanceRecords, savedWorkoutInstance]) =>
+        .then(savedWorkoutInstance =>
             Promise.all(
-                exerciseInstanceRecords.map(exerciseInstanceOperation)
-            ).then(() => savedWorkoutInstance)
+                exerciseInstanceOperations(savedWorkoutInstance)
+            ).then(exercises => ({ exercises, ...savedWorkoutInstance }))
         )
         // Update the state with the combined object
-        .then(savedWorkoutInstance =>
-            dispatch(
-                saveWorkoutInstance({
-                    ...workoutInstance,
-                    id: savedWorkoutInstance.id
-                })
-            )
-        )
+        .then(savedWorkoutInstance => {
+            dispatch(saveWorkoutInstance(savedWorkoutInstance));
+        })
         .catch(console.error);
 };
 

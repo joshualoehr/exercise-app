@@ -6,8 +6,7 @@ momentDurationFormatSetup(moment);
 export const newWorkoutInstance = (workout, userWeight) => ({
     workoutId: workout.id,
     date: new Date().toISOString(),
-    exercises: workout.workoutExercises.map(exercise => ({
-        id: exercise.id,
+    exercises: workout.workoutExercises.map((exercise, idx) => ({
         exerciseName: exercise.exerciseName,
         weight: exercise.weight,
         maxReps: exercise.numReps,

@@ -1,4 +1,5 @@
 // import { toQueryParams } from './utils';
+import db from './db';
 
 const baseUrl = 'http://localhost:5000';
 
@@ -71,24 +72,18 @@ export default {
         return fetchPost()(`${baseUrl}/login`, {
             email,
             password
-        })
-            .then(({ auth_token }) => {
-                localStorage.setItem('access_token', auth_token);
-                return auth_token;
-            })
-            .then(token => fetchGet(token)(`${baseUrl}/users/me`));
+        }).then(({ auth_token }) => {
+            localStorage.setItem('access_token', auth_token);
+        });
     },
     register: function(email, password) {
         const token = localStorage.getItem('access_token');
         return fetchPost(token)(`${baseUrl}/register`, {
             email,
             password
-        })
-            .then(({ auth_token }) => {
-                localStorage.setItem('access_token', auth_token);
-                return auth_token;
-            })
-            .then(token => fetchGet(token)(`${baseUrl}/users/me`));
+        }).then(({ auth_token }) => {
+            localStorage.setItem('access_token', auth_token);
+        });
     },
     logout: function() {
         const token = localStorage.getItem('access_token');
@@ -98,7 +93,27 @@ export default {
     },
     me: function() {
         const token = localStorage.getItem('access_token');
-        return fetchGet(token)(`${baseUrl}/users/me`);
+        return fetchGet(token)(`${baseUrl}/users/me`).then(user => {
+            const lastUpdate = localStorage.getItem('lastUpdate');
+            const lastRemoteUpdate = new Date(user.last_updated).getTime();
+
+            if (lastUpdate !== lastRemoteUpdate) {
+                const keepLocal = () =>
+                    db.sync.getAll().then(data => this.sync.updateAll(data));
+                const keepRemote = () =>
+                    this.sync.getAll().then(data => db.sync.updateAll(data));
+
+                return [
+                    user,
+                    {
+                        keepLocal: keepLocal,
+                        keepRemote: keepRemote
+                    }
+                ];
+            }
+
+            return [user, null];
+        });
     },
     getLastUpdated: function() {
         this.me().then(user => user.last_updated);
@@ -235,6 +250,19 @@ export default {
             return fetchDelete(token)(
                 `${baseUrl}/workouts/${workoutInstance.workoutId}/workoutInstances/${workoutInstance.id}`
             );
+        }
+    },
+    sync: {
+        getAll: function() {
+            const token = localStorage.getItem('access_token');
+            return fetchGet(token)(`${baseUrl}/sync`).then(({ sync }) => sync);
+        },
+        updateAll: function(data) {
+            const token = localStorage.getItem('access_token');
+            const lastUpdated = localStorage.getItem('lastUpdated');
+            return fetchPost(token)(`${baseUrl}/sync`, {
+                sync: { lastUpdated, ...data }
+            }).then(({ sync }) => sync);
         }
     }
 };

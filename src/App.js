@@ -14,7 +14,7 @@ import Frame from './features/common/Frame';
 import SignIn from './features/user/SignIn';
 import SyncConfirmation from './features/settings/SyncConfirmation';
 import web from './config/web';
-import { setUser } from './features/settings/settingsSlice';
+import { handleSync } from './features/user/usersSlice';
 import './App.css';
 
 const App = () => {
@@ -23,7 +23,7 @@ const App = () => {
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token) {
-            web.me().then(user => dispatch(setUser(user)));
+            web.me().then(res => dispatch(handleSync(res)));
         }
     }, []);
 

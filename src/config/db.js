@@ -90,19 +90,33 @@ User.prototype.serialize = function() {
     return JSON.parse(JSON.stringify(this));
 };
 
+const serialize = resources => {
+    if (resources.length) {
+        return resources.map(resource => resource.serialize());
+    } else {
+        return resource.serialize();
+    }
+};
+
 export default {
     exercises: {
         getAll: function(workoutId) {
-            return db.exercises.where({ workoutId });
+            return db.exercises
+                .where({ workoutId })
+                .toArray()
+                .then(serialize);
         },
         get: function(workoutId, id) {
-            return db.exercises.where({ id, workoutId });
+            return db.exercises
+                .where({ id, workoutId })
+                .first()
+                .then(serialize);
         },
         add: function(exercise) {
-            return db.exercises.add(exercise);
+            return db.exercises.add(exercise).then(id => ({ id, ...exercise }));
         },
         put: function(exercise) {
-            return db.exercises.put(exercise);
+            return db.exercises.put(exercise).then(id => ({ id, ...exercise }));
         },
         delete: function(exercise) {
             return db.exercises.delete(exercise.id);
@@ -110,16 +124,26 @@ export default {
     },
     exerciseInstances: {
         getAll: function(workoutInstanceId) {
-            return db.exerciseInstances.where({ workoutInstanceId });
+            return db.exerciseInstances
+                .where({ workoutInstanceId })
+                .toArray()
+                .then(serialize);
         },
         get: function(workoutInstanceId, id) {
-            return db.exerciseInstances.where({ id, workoutInstanceId });
+            return db.exerciseInstances
+                .where({ id, workoutInstanceId })
+                .first()
+                .then(serialize);
         },
         add: function(exerciseInstance) {
-            return db.exerciseInstances.add(exerciseInstance);
+            return db.exerciseInstances
+                .add(exerciseInstance)
+                .then(id => ({ id, ...exerciseInstance }));
         },
         put: function(exerciseInstance) {
-            return db.exerciseInstances.put(exerciseInstance);
+            return db.exerciseInstances
+                .put(exerciseInstance)
+                .then(id => ({ id, ...exerciseInstance }));
         },
         delete: function(exerciseInstance) {
             return db.exerciseInstances.delete(exerciseInstance.id);
@@ -135,16 +159,16 @@ export default {
             );
         },
         getAll: function() {
-            return db.workouts.toArray();
+            return db.workouts.toArray().then(serialize);
         },
         get: function(id) {
             return db.workouts.get(id);
         },
         add: function(workout) {
-            return db.workouts.add(workout);
+            return db.workouts.add(workout).then(id => ({ id, ...workout }));
         },
         put: function(workout) {
-            return db.workouts.put(workout);
+            return db.workouts.put(workout).then(id => ({ id, ...workout }));
         },
         delete: function(workout) {
             return db.workouts.delete(workout.id);
@@ -165,19 +189,86 @@ export default {
                 );
         },
         getAll: function(workoutId) {
-            return db.workoutInstances.where({ workoutId });
+            return db.workoutInstances
+                .where({ workoutId })
+                .toArray()
+                .then(serialize);
         },
         get: function(workoutId, id) {
-            return db.workoutInstances.where({ id, workoutId });
+            return db.workoutInstances
+                .where({ id, workoutId })
+                .first()
+                .then(serialize);
         },
         add: function(workoutInstance) {
-            return db.workoutInstances.add(workoutInstance);
+            return db.workoutInstances
+                .add(workoutInstance)
+                .then(id => ({ id, ...workoutInstance }));
         },
         put: function(workoutInstance) {
-            return db.workoutInstances.put(workoutInstance);
+            return db.workoutInstances
+                .put(workoutInstance)
+                .then(id => ({ id, ...workoutInstance }));
         },
         delete: function(workoutInstance) {
             return db.workoutInstances.delete(workoutInstance.id);
+        }
+    },
+    sync: {
+        getAll: function() {
+            return Promise.all([
+                db.exercises.toArray(),
+                db.exerciseInstances.toArray(),
+                db.workouts.toArray(),
+                db.workoutInstances.toArray()
+            ]).then(
+                ([
+                    exercises,
+                    exerciseInstances,
+                    workouts,
+                    workoutInstances
+                ]) => ({
+                    exercises,
+                    exerciseInstances,
+                    workouts,
+                    workoutInstances
+                })
+            );
+        },
+        updateAll: function({
+            lastUpdated,
+            exercises,
+            exerciseInstances,
+            workouts,
+            workoutInstances
+        }) {
+            exerciseIds = exercises.map(exercise => exercise.id);
+            exerciseInstanceIds = exerciseInstances.map(
+                exerciseInstance => exerciseInstance.id
+            );
+            workoutIds = workouts.map(workout => workout.id);
+            workoutInstanceIds = workoutInstances.map(
+                workoutInstance => workoutInstance.id
+            );
+
+            return Promise.all([
+                db.exercises.bulkDelete(exerciseIds),
+                db.exerciseInstances.bulkDelete(exerciseInstanceIds),
+                db.workouts.bulkDelete(workoutIds),
+                db.workoutInstances.bulkDelete(workoutInstanceIds)
+            ])
+                .then(() =>
+                    Promise.all([
+                        db.exercises.bulkAdd(exercises),
+                        db.exerciseInstances.bulkAdd(exerciseInstances),
+                        db.workouts.bulkAdd(workouts),
+                        db.workoutInstances.bulkAdd(workoutInstances)
+                    ])
+                )
+                .then(() => {
+                    localStorage.setItem('lastUpdated', lastUpdated);
+                    localStorage.setItem('lastSync', lastUpdate);
+                });
         }
     }
 };

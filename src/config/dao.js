@@ -8,74 +8,54 @@ if (!localStorage.getItem('lastSync')) {
     localStorage.setItem('lastSync', 0);
 }
 
-const synchronized = async dbOperation => {
-    if (!web.online()) {
-        return [null, await dbOperation()];
-    }
-
-    const lastSync = localStorage.getItem('lastSync');
-    const lastRemoteUpdate = await web.getLastUpdated();
-
-    if (lastRemoteUpdate === null) {
-        return [null, await dbOperation()];
-    }
-
-    if (lastSync > 0 && lastSync !== lastRemoteUpdate) {
-        // TODO: do the sync
-        return [
-            {
-                keepLocal: dbOperation,
-                keepRemote: dbOperation,
-                cancel: () => web.logout().then(dbOperation)
-            },
-            null
-        ];
-    }
-
-    return [null, await dbOperation()];
-};
-
 export default {
     exercises: {
-        getAll: workoutId => synchronized(() => db.exercises.getAll(workoutId)),
-        get: (workoutId, id) =>
-            synchronized(() => db.exercises.get(workoutId, id)),
-        add: exercise => synchronized(() => db.exercises.add(exercise)),
-        put: exercise => synchronized(() => db.exercises.put(exercise)),
-        delete: exercise => synchronized(() => db.exercises.delete(exercise))
+        getAll: workoutId => db.exercises.getAll(workoutId),
+        get: (workoutId, id) => db.exercises.get(workoutId, id),
+        add: exercise =>
+            db.exercises.add(exercise).then(id => ({ id, ...exercise })),
+        put: exercise =>
+            db.exercises.put(exercise).then(id => ({ id, ...exercise })),
+        delete: exercise => db.exercises.delete(exercise)
     },
     exerciseInstances: {
         getAll: workoutInstanceId =>
-            synchronized(() => db.exerciseInstances.getAll(workoutInstanceId)),
+            db.exerciseInstances.getAll(workoutInstanceId),
         get: (workoutInstanceId, id) =>
-            synchronized(() => db.exerciseInstances.get(workoutInstanceId, id)),
+            db.exerciseInstances.get(workoutInstanceId, id),
         add: exerciseInstance =>
-            synchronized(() => db.exerciseInstances.add(exerciseInstance)),
+            db.exerciseInstances
+                .add(exerciseInstance)
+                .then(id => ({ id, ...exerciseInstance })),
         put: exerciseInstance =>
-            synchronized(() => db.exerciseInstances.put(exerciseInstance)),
+            db.exerciseInstances
+                .put(exerciseInstance)
+                .then(id => ({ id, ...exerciseInstance })),
         delete: exerciseInstance =>
-            synchronized(() => db.exerciseInstances.delete(exerciseInstance))
+            db.exerciseInstances.delete(exerciseInstance)
     },
     workouts: {
-        getAllDeep: () => synchronized(() => db.workouts.getAllDeep()),
-        getAll: () => synchronized(() => db.workouts.getAll()),
-        get: id => synchronized(() => db.workouts.get(id)),
-        add: workout => synchronized(() => db.workouts.add(workout)),
-        put: workout => synchronized(() => db.workouts.put(workout)),
-        delete: workout => synchronized(() => db.workouts.delete(workout))
+        getAllDeep: () => db.workouts.getAllDeep(),
+        getAll: () => db.workouts.getAll(),
+        get: id => db.workouts.get(id),
+        add: workout =>
+            db.workouts.add(workout).then(id => ({ id, ...workout })),
+        put: workout =>
+            db.workouts.put(workout).then(id => ({ id, ...workout })),
+        delete: workout => db.workouts.delete(workout)
     },
     workoutInstances: {
-        getAllDeep: workoutId =>
-            synchronized(() => db.workoutInstances.getAllDeep(workoutId)),
-        getAll: workoutId =>
-            synchronized(() => db.workoutInstances.getAll(workoutId)),
-        get: (workoutId, id) =>
-            synchronized(() => db.workoutInstances.get(workoutId, id)),
+        getAllDeep: workoutId => db.workoutInstances.getAllDeep(workoutId),
+        getAll: workoutId => db.workoutInstances.getAll(workoutId),
+        get: (workoutId, id) => db.workoutInstances.get(workoutId, id),
         add: workoutInstance =>
-            synchronized(() => db.workoutInstances.add(workoutInstance)),
+            db.workoutInstances
+                .add(workoutInstance)
+                .then(id => ({ id, ...workoutInstance })),
         put: workoutInstance =>
-            synchronized(() => db.workoutInstances.put(workoutInstance)),
-        delete: workoutInstance =>
-            synchronized(() => db.workoutInstances.delete(workoutInstance))
+            db.workoutInstances
+                .put(workoutInstance)
+                .then(id => ({ id, ...workoutInstance })),
+        delete: workoutInstance => db.workoutInstances.delete(workoutInstance)
     }
 };

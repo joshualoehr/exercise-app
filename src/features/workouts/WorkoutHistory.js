@@ -123,7 +123,7 @@ const WorkoutHistory = () => {
                                     {moment(workoutInstance.date).calendar()}
                                 </Typography>
                                 {truncateList(workoutInstance.exercises).map(
-                                    exerciseInstance =>
+                                    (exerciseInstance, idx) =>
                                         typeof exerciseInstance === 'string' ? (
                                             <Typography
                                                 key={-1}
@@ -133,7 +133,7 @@ const WorkoutHistory = () => {
                                             </Typography>
                                         ) : (
                                             <ExerciseInstance
-                                                key={exerciseInstance.id}
+                                                key={idx}
                                                 exerciseInstance={
                                                     exerciseInstance
                                                 }

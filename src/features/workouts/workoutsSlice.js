@@ -1,12 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import dao from '../../config/dao';
 import { addOrReplace } from '../../config/utils';
-import {
-    setShowSyncConfirmation,
-    setOnSyncKeepLocal,
-    setOnSyncKeepRemote,
-    setOnSyncCancel
-} from '../settings/settingsSlice';
 
 const workoutsSlice = createSlice({
     name: 'workouts',
@@ -145,7 +139,6 @@ export const {
 
 export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
     const {
-        settings: { user },
         workouts: { editedWorkout }
     } = getState();
 
@@ -160,11 +153,11 @@ export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
         : dao.workouts.add;
 
     const exerciseOperation = ex =>
-        ex.id ? dao.exercises.put(user, ex) : dao.exercises.add(user, ex);
+        ex.id ? dao.exercises.put(ex) : dao.exercises.add(ex);
 
     const exerciseOperations = savedWorkout =>
         deletedExercises
-            .map(ex => dao.exercises.delete(user, ex.id))
+            .map(ex => dao.exercises.delete(ex.id))
             .concat(
                 exerciseRecords.map(ex => {
                     const copy = { ...ex };
@@ -175,23 +168,15 @@ export const saveEditedWorkoutAsync = () => (dispatch, getState) => {
             );
 
     // Create or update the workout record
-    workoutOperation(user, workoutRecord)
+    workoutOperation(workoutRecord)
         // Create/update/delete each exercise record
         .then(savedWorkout =>
             Promise.all(
                 exerciseOperations(savedWorkout)
-            ).then(workoutExercises => [savedWorkout, workoutExercises])
+            ).then(workoutExercises => ({ workoutExercises, ...savedWorkout }))
         )
         // Update the state with the combined object
-        .then(([savedWorkout, workoutExercises]) =>
-            dispatch(
-                saveEditedWorkout({
-                    ...editedWorkout,
-                    workoutExercises,
-                    id: savedWorkout.id
-                })
-            )
-        )
+        .then(savedWorkout => dispatch(saveEditedWorkout(savedWorkout)))
         .catch(console.error);
 };
 
@@ -199,53 +184,32 @@ export const fetchWorkouts = () => dispatch => {
     dispatch(setWorkouts(null));
     dao.workouts
         .getAllDeep()
-        .then(([sync, workouts]) => {
-            if (sync) {
-                const { keepLocal, keepRemote, cancel } = sync;
-                setOnSyncKeepLocal(() =>
-                    keepLocal().then(workouts =>
-                        dispatch(setWorkouts(workouts))
-                    )
-                );
-                setOnSyncKeepRemote(() =>
-                    keepRemote().then(workouts =>
-                        dispatch(setWorkouts(workouts))
-                    )
-                );
-                setOnSyncCancel(() =>
-                    cancel().then(workouts => dispatch(setWorkouts(workouts)))
-                );
-                dispatch(setShowSyncConfirmation(true));
-            } else {
-                dispatch(setWorkouts(workouts));
-            }
-        })
+        .then(workouts => dispatch(setWorkouts(workouts)))
         .catch(console.error);
 };
 
 export const deleteWorkoutAsync = () => (dispatch, getState) => {
     const {
-        settings: { user },
         workouts: { editedWorkout }
     } = getState();
 
-    const deleteExercise = ex => dao.exercises.delete(user, ex.id);
+    const deleteExercise = ex => dao.exercises.delete(ex.id);
     const deleteExercises = workoutExercises =>
         workoutExercises.filter(ex => !!ex.id).map(deleteExercise);
 
     Promise.all(deleteExercises(editedWorkout.workoutExercises)).then(() =>
         dao.workouts
-            .delete(user, editedWorkout.id)
+            .delete(editedWorkout.id)
             .then(() => dispatch(deleteWorkout(editedWorkout)))
     );
 };
 
-const sortWorkoutInstances = res => [
-    ...Array.from(res.workoutInstances).sort((a, b) => b.date - a.date)
+const sortWorkoutInstances = workoutInstances => [
+    ...Array.from(workoutInstances).sort((a, b) => b.date - a.date)
 ];
 export const fetchWorkoutHistory = workout => dispatch => {
     dao.workoutInstances
-        .getAll(workout.id)
+        .getAllDeep(workout.id)
         .then(sortWorkoutInstances)
         .then(workoutInstances =>
             dispatch(setWorkoutHistory(workoutInstances))

@@ -40,9 +40,9 @@ const WorkoutInstanceContent = () => {
 
     return (
         <Container className={classes.innerContainer}>
-            {workoutInstance.exercises.map(exerciseInstance => (
+            {workoutInstance.exercises.map((exerciseInstance, idx) => (
                 <ExerciseInstanceCard
-                    key={exerciseInstance.id}
+                    key={idx}
                     exerciseInstance={exerciseInstance}
                 />
             ))}
