@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
 import relationships from 'dexie-relationships';
+import { datetime } from './utils';
 
 const db = new Dexie('LiftJL', { addons: [relationships] });
 db.version(1).stores({
@@ -18,14 +19,14 @@ db.version(1).stores({
     'users'
 ].forEach(tableName => {
     db[tableName].hook('creating', function(primaryKey, obj) {
-        const now = Date.now();
-        obj.lastUpdated = Math.floor(now / 1000);
+        const now = datetime();
+        obj.lastUpdated = now;
         localStorage.setItem('lastUpdated', now);
     });
     db[tableName].hook('updating', function(mods) {
-        const now = Date.now();
+        const now = datetime();
         localStorage.setItem('lastUpdated', now);
-        return { ...mods, lastUpdated: Math.floor(now / 1000) };
+        return { ...mods, lastUpdated: now };
     });
 });
 
@@ -216,6 +217,7 @@ export default {
     },
     sync: {
         getAll: function() {
+            const lastUpdated = localStorage.getItem('lastUpdated');
             return Promise.all([
                 db.exercises.toArray(),
                 db.exerciseInstances.toArray(),
@@ -228,6 +230,7 @@ export default {
                     workouts,
                     workoutInstances
                 ]) => ({
+                    lastUpdated,
                     exercises,
                     exerciseInstances,
                     workouts,
@@ -268,6 +271,13 @@ export default {
                 .then(() => {
                     localStorage.setItem('lastUpdated', lastUpdated);
                     localStorage.setItem('lastSync', lastUpdated);
+                    return {
+                        lastUpdated,
+                        exercises,
+                        exerciseInstances,
+                        workouts,
+                        workoutInstances
+                    };
                 });
         }
     }

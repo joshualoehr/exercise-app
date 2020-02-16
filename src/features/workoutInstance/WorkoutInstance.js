@@ -62,6 +62,11 @@ const WorkoutInstance = () => {
     const workoutInstance = useSelector(
         state => state.workoutInstance.workoutInstance
     );
+    const recordedWeight = useSelector(state =>
+        state.workoutInstance.workoutInstance
+            ? state.workoutInstance.workoutInstance.recordedWeight
+            : null
+    );
 
     const atLeastOneSetComplete =
         workoutInstance && workoutInstance.exercises
@@ -72,6 +77,8 @@ const WorkoutInstance = () => {
                   false
               )
             : false;
+
+    const btnDisabled = !atLeastOneSetComplete || !recordedWeight;
 
     return (
         <SlidingPage
@@ -89,8 +96,8 @@ const WorkoutInstance = () => {
                         dispatch(saveWorkoutInstanceAsync());
                         dispatch(setWorkoutInstance(null));
                     }}
-                    disabled={!atLeastOneSetComplete}
-                    style={{ color: atLeastOneSetComplete ? 'white' : null }}
+                    disabled={btnDisabled}
+                    style={{ color: !btnDisabled ? 'white' : null }}
                 >
                     {workoutInstance && workoutInstance.id ? 'Done' : 'Finish'}
                 </Button>

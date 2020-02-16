@@ -1,5 +1,5 @@
-// import { toQueryParams } from './utils';
 import db from './db';
+import { datetime } from './utils';
 
 const baseUrl = 'http://localhost:5000';
 
@@ -32,35 +32,47 @@ const fetchGetAll = token => url => {
 };
 
 const fetchPost = token => (url, obj = {}) => {
+    const payload = {
+        ...obj,
+        lastSync: datetime()
+    };
     return fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(obj)
+        body: JSON.stringify(payload)
     })
         .then(res => res.json())
         .then(handleWebResponse);
 };
 
 const fetchPut = token => (url, obj = {}) => {
+    const payload = {
+        ...obj,
+        lastSync: datetime()
+    };
     return fetch(url, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(obj)
+        body: JSON.stringify(payload)
     })
         .then(res => res.json())
         .then(handleWebResponse);
 };
 
 const fetchDelete = token => url => {
+    const payload = {
+        lastSync: datetime()
+    };
     return fetch(url, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
     })
         .then(res => res.json())
         .then(handleWebResponse);
@@ -71,7 +83,7 @@ const sync = {
         const token = localStorage.getItem('access_token');
         return fetchGet(token)(`${baseUrl}/sync`).then(({ sync }) => ({
             ...sync,
-            lastUpdated: new Date(sync.lastUpdated).getTime()
+            lastUpdated: datetime(new Date(sync.lastUpdated))
         }));
     },
     updateAll: function(data) {
@@ -79,7 +91,10 @@ const sync = {
         const lastUpdated = localStorage.getItem('lastUpdated');
         return fetchPost(token)(`${baseUrl}/sync`, {
             sync: { lastUpdated, ...data }
-        }).then(({ sync }) => sync);
+        }).then(({ sync: { last_updated, ...sync } }) => ({
+            ...sync,
+            lastUpdated: last_updated
+        }));
     }
 };
 
@@ -112,13 +127,28 @@ export default {
         const token = localStorage.getItem('access_token');
         return fetchGet(token)(`${baseUrl}/users/me`).then(({ user }) => {
             const lastUpdate = parseInt(localStorage.getItem('lastUpdated'));
-            const lastRemoteUpdate = new Date(user.last_updated).getTime();
+            const lastRemoteUpdate = datetime(new Date(user.last_updated));
 
             if (lastUpdate !== lastRemoteUpdate) {
                 const keepLocal = () =>
-                    db.sync.getAll().then(data => sync.updateAll(data));
+                    db.sync
+                        .getAll()
+                        .then(data => sync.updateAll(data))
+                        .then(data => {
+                            localStorage.setItem(
+                                'lastUpdated',
+                                data.lastUpdated
+                            );
+                        });
                 const keepRemote = () =>
-                    sync.getAll().then(data => db.sync.updateAll(data));
+                    sync.getAll().then(data =>
+                        db.sync.updateAll(data).then(data => {
+                            localStorage.setItem(
+                                'lastUpdated',
+                                data.lastUpdated
+                            );
+                        })
+                    );
 
                 return [
                     user,

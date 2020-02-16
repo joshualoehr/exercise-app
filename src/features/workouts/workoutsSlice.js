@@ -2,6 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 import dao from '../../config/dao';
 import { addOrReplace } from '../../config/utils';
 
+const sortWorkoutInstances = workoutInstances => [
+    ...Array.from(workoutInstances).sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+    )
+];
+
 const workoutsSlice = createSlice({
     name: 'workouts',
     initialState: {
@@ -114,9 +120,8 @@ const workoutsSlice = createSlice({
         },
         saveWorkoutInstance(state, action) {
             const savedWorkoutInstance = action.payload;
-            state.workoutHistory = addOrReplace(
-                state.workoutHistory,
-                savedWorkoutInstance
+            state.workoutHistory = sortWorkoutInstances(
+                addOrReplace(state.workoutHistory, savedWorkoutInstance)
             );
         }
     }
@@ -203,11 +208,6 @@ export const deleteWorkoutAsync = () => (dispatch, getState) => {
     );
 };
 
-const sortWorkoutInstances = workoutInstances => [
-    ...Array.from(workoutInstances).sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
-    )
-];
 export const fetchWorkoutHistory = workout => dispatch => {
     dao.workoutInstances
         .getAllDeep(workout.id)

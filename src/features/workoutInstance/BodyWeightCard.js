@@ -33,7 +33,7 @@ const BodyWeightCard = () => {
     const dispatch = useDispatch();
 
     const recordedWeight = useSelector(
-        state => state.workoutInstance.workoutInstance.recordedWeight
+        state => state.workoutInstance.workoutInstance.recordedWeight || ''
     );
 
     return (

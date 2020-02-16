@@ -3,13 +3,17 @@ import momentDurationFormatSetup from 'moment-duration-format';
 
 momentDurationFormatSetup(moment);
 
+export const datetime = (date = new Date()) =>
+    Math.floor(date.getTime() / 1000);
+
 export const newWorkoutInstance = (workout, userWeight) => ({
     workoutId: workout.id,
-    date: new Date().toISOString(),
-    exercises: workout.workoutExercises.map((exercise, idx) => ({
+    date: datetime(),
+    exercises: workout.workoutExercises.map(exercise => ({
         exerciseName: exercise.exerciseName,
         weight: exercise.weight,
         maxReps: exercise.numReps,
+        recordedWeight: exercise.recordedWeight,
         sets: new Array(exercise.numSets).fill({
             completedReps: null
         })
