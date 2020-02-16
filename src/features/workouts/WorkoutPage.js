@@ -24,13 +24,15 @@ const useStyles = makeStyles(() => ({
         height: '60px',
         marginBottom: '24px'
     },
+    outerContainer: {
+        overflow: 'auto',
+        height: `calc(100% - ${TOP_BAR_HEIGHT * 2}px)`
+    },
     container: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '24px',
-        height: `calc(100% - ${TOP_BAR_HEIGHT * 2}px)`,
-        overflowY: 'auto'
+        padding: '24px'
     },
     workoutExerciseContainer: {
         display: 'flex',
@@ -83,6 +85,7 @@ const WorkoutPageContent = () => {
 };
 
 const WorkoutPage = () => {
+    const classes = useStyles();
     const dispatch = useDispatch();
     const selectedWorkout = useSelector(
         state => state.workouts.selectedWorkout,
@@ -115,9 +118,11 @@ const WorkoutPage = () => {
                 </IconButton>
             )}
         >
-            {selectedWorkout && (
-                <WorkoutPageContent workout={selectedWorkout} />
-            )}
+            <div className={classes.outerContainer}>
+                {selectedWorkout && (
+                    <WorkoutPageContent workout={selectedWorkout} />
+                )}
+            </div>
         </SlidingPage>
     );
 };

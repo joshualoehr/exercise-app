@@ -37,6 +37,7 @@ const useStyles = makeStyles(theme => ({
     exerciseInstanceContainer: {
         display: 'flex',
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         whiteSpace: 'nowrap'
     },
@@ -66,26 +67,25 @@ const ExerciseInstance = ({ exerciseInstance }) => {
         <div className={classes.exerciseInstanceContainer}>
             <Typography
                 className={classes.exerciseInstanceText}
-                style={{ marginRight: '8px', width: '30%' }}
+                style={{ marginRight: '8px' }}
             >
                 {exerciseName}
             </Typography>
-            {' \u2014 '}
-            <Typography
-                className={classes.exerciseInstanceText}
-                style={{
-                    marginLeft: '8px',
-                    width: '40%'
-                }}
-            >
-                {concatSets}
-            </Typography>
-            <Typography
-                className={classes.exerciseInstanceText}
-                style={{ marginLeft: '8px', width: '30%' }}
-            >
-                {weight} lbs
-            </Typography>
+            <div style={{ display: 'flex' }}>
+                <Typography
+                    className={classes.exerciseInstanceText}
+                    style={{ marginRight: '6px' }}
+                >
+                    {concatSets}
+                </Typography>
+                {' \u2014 '}
+                <Typography
+                    className={classes.exerciseInstanceText}
+                    style={{ marginLeft: '6px' }}
+                >
+                    {weight} lbs
+                </Typography>
+            </div>
         </div>
     );
 };

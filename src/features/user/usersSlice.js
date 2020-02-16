@@ -45,14 +45,10 @@ export const handleSync = ([user, syncOps]) => dispatch => {
     if (syncOps) {
         const { keepLocal, keepRemote } = syncOps;
         setOnSyncKeepLocal(() =>
-            keepLocal()
-                .bind(web)
-                .then(() => dispatch(setUser(user)))
+            keepLocal().then(() => dispatch(setUser(user)))
         );
         setOnSyncKeepRemote(() =>
-            keepRemote
-                .bind(web)()
-                .then(() => dispatch(setUser(user)))
+            keepRemote().then(() => dispatch(setUser(user)))
         );
         setOnSyncCancel(() => web.logout());
         dispatch(setShowSyncConfirmation(true));

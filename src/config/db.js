@@ -18,10 +18,14 @@ db.version(1).stores({
     'users'
 ].forEach(tableName => {
     db[tableName].hook('creating', function(primaryKey, obj) {
-        obj.lastUpdated = Math.floor(Date.now() / 1000);
+        const now = Date.now();
+        obj.lastUpdated = Math.floor(now / 1000);
+        localStorage.setItem('lastUpdated', now);
     });
     db[tableName].hook('updating', function(mods) {
-        return { ...mods, lastUpdated: Math.floor(Date.now() / 1000) };
+        const now = Date.now();
+        localStorage.setItem('lastUpdated', now);
+        return { ...mods, lastUpdated: Math.floor(now / 1000) };
     });
 });
 

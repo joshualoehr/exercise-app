@@ -66,6 +66,23 @@ const fetchDelete = token => url => {
         .then(handleWebResponse);
 };
 
+const sync = {
+    getAll: function() {
+        const token = localStorage.getItem('access_token');
+        return fetchGet(token)(`${baseUrl}/sync`).then(({ sync }) => ({
+            ...sync,
+            lastUpdated: new Date(sync.lastUpdated).getTime()
+        }));
+    },
+    updateAll: function(data) {
+        const token = localStorage.getItem('access_token');
+        const lastUpdated = localStorage.getItem('lastUpdated');
+        return fetchPost(token)(`${baseUrl}/sync`, {
+            sync: { lastUpdated, ...data }
+        }).then(({ sync }) => sync);
+    }
+};
+
 export default {
     online: () => !!localStorage.getItem('access_token'),
     login: function(email, password) {
@@ -99,9 +116,9 @@ export default {
 
             if (lastUpdate !== lastRemoteUpdate) {
                 const keepLocal = () =>
-                    db.sync.getAll().then(data => this.sync.updateAll(data));
+                    db.sync.getAll().then(data => sync.updateAll(data));
                 const keepRemote = () =>
-                    this.sync.getAll().then(data => db.sync.updateAll(data));
+                    sync.getAll().then(data => db.sync.updateAll(data));
 
                 return [
                     user,
@@ -252,20 +269,5 @@ export default {
             );
         }
     },
-    sync: {
-        getAll: function() {
-            const token = localStorage.getItem('access_token');
-            return fetchGet(token)(`${baseUrl}/sync`).then(({ sync }) => ({
-                ...sync,
-                lastUpdated: new Date(sync.lastUpdated).getTime()
-            }));
-        },
-        updateAll: function(data) {
-            const token = localStorage.getItem('access_token');
-            const lastUpdated = localStorage.getItem('lastUpdated');
-            return fetchPost(token)(`${baseUrl}/sync`, {
-                sync: { lastUpdated, ...data }
-            }).then(({ sync }) => sync);
-        }
-    }
+    sync
 };

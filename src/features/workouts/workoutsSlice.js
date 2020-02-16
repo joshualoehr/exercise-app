@@ -193,19 +193,20 @@ export const deleteWorkoutAsync = () => (dispatch, getState) => {
         workouts: { editedWorkout }
     } = getState();
 
-    const deleteExercise = ex => dao.exercises.delete(ex.id);
     const deleteExercises = workoutExercises =>
-        workoutExercises.filter(ex => !!ex.id).map(deleteExercise);
+        workoutExercises.filter(ex => !!ex.id).map(dao.exercises.delete);
 
     Promise.all(deleteExercises(editedWorkout.workoutExercises)).then(() =>
         dao.workouts
-            .delete(editedWorkout.id)
+            .delete(editedWorkout)
             .then(() => dispatch(deleteWorkout(editedWorkout)))
     );
 };
 
 const sortWorkoutInstances = workoutInstances => [
-    ...Array.from(workoutInstances).sort((a, b) => b.date - a.date)
+    ...Array.from(workoutInstances).sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+    )
 ];
 export const fetchWorkoutHistory = workout => dispatch => {
     dao.workoutInstances

@@ -63,9 +63,14 @@ const TimerBar = () => {
 
     return (
         <Slide direction="up" in={showTimer} mountOnEnter unmountOnExit>
-            <Paper elevation={16} style={{ width: '100%', height: '48px' }}>
+            <div
+                style={{
+                    display: showTimer ? 'block' : 'none',
+                    height: '48px'
+                }}
+            >
                 <TimerBarContent />
-            </Paper>
+            </div>
         </Slide>
     );
 };
