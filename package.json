@@ -56,7 +56,7 @@
         "@reduxjs/toolkit": "^1.2.3",
         "cookie-parser": "^1.4.4",
         "debug": "^4.1.1",
-        "dexie": "^2.0.4",
+        "dexie": "^3.2.2",
         "dexie-relationships": "^1.2.11",
         "express": "^4.17.1",
         "http-errors": "^1.7.3",
